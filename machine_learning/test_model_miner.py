@@ -270,6 +270,15 @@ class ModelMinerTest(unittest.TestCase):
             pd.Series(expected_results)
         )
 
+    def test_warning_search_model(self):
+        with warnings.catch_warnings(record=True) as w:
+            np.random.seed(0)
+            ModelMiner(self.dataframe, self.target).search_model(1030)
+
+            assert len(w) == 1
+            assert issubclass(w[-1].category, UserWarning)
+            assert "signal isn't compatible with normalization and will be set to 'histogram'." in str(w[-1].message)
+
     def test_create_model(self):
         np.random.seed(120)
         feat_params = self.model_miner.generate_feat_parameters()
