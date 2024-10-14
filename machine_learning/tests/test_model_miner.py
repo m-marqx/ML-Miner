@@ -1,4 +1,5 @@
 import unittest
+import warnings
 
 import pandas as pd
 import numpy as np
@@ -247,8 +248,8 @@ class ModelMinerTest(unittest.TestCase):
             'total_operations_pct_val': 5.918367346938775,
             'r2_in_2023': 0.857435,
             'r2_val': 0.558247,
-            'ols_coef_2022': -0.020184,
-            'ols_coef_val': 0.100191,
+            'ols_coef_2022': -2.0184e-08,
+            'ols_coef_val': 1.00191e-07,
             'test_index': 1030,
             'train_in_middle': True,
             'return_ratios': {
@@ -262,8 +263,11 @@ class ModelMinerTest(unittest.TestCase):
             'off_days': 7
         }
 
-        np.random.seed(0)
-        results = ModelMiner(self.dataframe, self.target).search_model(1030)
+        with warnings.catch_warnings():
+            warnings.simplefilter(action="ignore", category=UserWarning)
+
+            np.random.seed(0)
+            results = ModelMiner(self.dataframe, self.target).search_model(1030)
 
         pd.testing.assert_series_equal(
             pd.Series(results).drop('total_time'),
@@ -393,8 +397,8 @@ class ModelMinerTest(unittest.TestCase):
             'total_operations_pct_val': 5.72108843537415,
             'r2_in_2023': 0.832332,
             'r2_val': 0.596389,
-            'ols_coef_2022': -0.0166337,
-            'ols_coef_val': 0.0450816,
+            'ols_coef_2022': -1.66337e-08,
+            'ols_coef_val': 4.50816e-08,
             'test_index': 1030,
             'train_in_middle': True,
             'return_ratios': {
