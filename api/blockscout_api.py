@@ -156,7 +156,9 @@ class BlockscoutAPI:
             is_swap = items[x]["method"] == swap_name
 
             if is_swap:
-                swap = self.get_transactions(items[x]["hash"], coin_names)
+                txid = items[x]["hash"]
+
+                swap = self.get_transactions(txid, coin_names)
                 swap_count += 1
 
                 self.logger.info(
