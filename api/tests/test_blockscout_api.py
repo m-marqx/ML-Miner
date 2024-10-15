@@ -127,3 +127,35 @@ class TestBlockscoutAPI(unittest.TestCase):
         }
 
         self.assertDictEqual(result, expected_result)
+
+    @patch("requests.get")
+    def test_get_transactions_no_coin_names(self, mock_get):
+        mock_response = Mock()
+        mock_response.json.return_value = {
+            "items": [
+                {
+                    "token": {"symbol": "USDT"},
+                    "total": {"decimals": "6", "value": "7757769"},
+                },
+                {
+                    "token": {"symbol": "WBTC"},
+                    "total": {"decimals": "8", "value": "12859"},
+                },
+            ]
+        }
+
+        mock_get.return_value = mock_response
+
+        result = self.api.get_transactions(
+            "0x1",
+            False,
+        )
+
+        expected_result = {
+            'from': 7.757769,
+            'to': 0.00012859,
+            'USD Price': 60329.489073800454,
+        }
+
+        self.assertDictEqual(result, expected_result)
+
