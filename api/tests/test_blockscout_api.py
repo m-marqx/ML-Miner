@@ -1,6 +1,5 @@
 import unittest
 from unittest.mock import patch, Mock
-import pandas as pd
 from api.blockscout_api import BlockscoutAPI
 
 
