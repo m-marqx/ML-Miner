@@ -212,31 +212,30 @@ class DataHandler:
         return results
 
 def get_recommendation(
-    predict_series,
-    return_dtype: Literal["string", "normal", "int", "bool"] = "string",
-    add_span_tag: bool = False,
-):
+    predict_series: pd.Series,
+    time_stop: int = 7,
+    add_span_tag: bool = False
+) -> pd.Series:
     """
     Generate trading recommendations based on the prediction series.
 
-    This function takes a series of predictions and generates trading
-    recommendations in different formats based on the specified return
-    data type.
+    The function generates trading recommendations based on the
+    predictions provided in the input series. The recommendations are
+    based on the following rules:
+
+    - Open a long position when the prediction is 1.
+    - Close the long position after a specified number of periods
 
     Parameters
     ----------
+
     predict_series : pd.Series
         A pandas Series containing the prediction values.
-    return_dtype : {'string', 'normal', 'int', 'bool'}, optional
-        The desired return data type for the recommendations.
-        - 'string': Returns recommendations as strings
-        ('Long', 'Do Nothing', 'Short').
-        - 'normal': Returns the original prediction series.
-        - 'int': Returns the predictions as integers.
-        - 'bool': Returns the predictions as boolean values
-        (True for positive, False otherwise).
+    time_stop : int, optional
+        The number of periods to consider for time stop (closing the
+        position after a certain number of periods).
 
-        (default:'string')
+        (default: 7)
     add_span_tag : bool, optional
         If True, the recommendations are returned as HTML strings with
         span tags for color formatting. If False, the recommendations
@@ -247,21 +246,43 @@ def get_recommendation(
     Returns
     -------
     pd.Series
-        A pandas Series containing the trading recommendations in the
-        specified format.
+        A pandas Series containing the trading recommendations.
     """
-    predict = predict_series.copy()
-    predict.index = predict.index.date
-    predict = predict.rename_axis("date")
+    data = predict_series.copy()
 
-    confirmed_signals = pd.Series(predict.iloc[:-1], name=predict.name)
+    open_positions_df = data.rename("Open_Position")
+    close_positions_df = data.shift(time_stop).rename("Close_Position") * -1
 
-    unconfirmed_signal = pd.Series(
-        predict.iloc[-1],
-        index=["Unconfirmed"],
+    positions_df = pd.concat(
+        [open_positions_df, close_positions_df], axis=1
+    ).fillna(0)
+    positions_df["Position"] = positions_df.sum(axis=1)
+    positions_df["Open_trades"] = positions_df["Position"].cumsum()
+
+    positions_df["Open_trades"] = (
+        (positions_df["Open_trades"] * 33.3).round(0).astype(int)
+    ).astype(str) + "%"
+
+    open_pos = (
+        (positions_df["Open_Position"] > 0)
+        & (positions_df["Position"] != 0)
     )
 
-    signals = pd.concat([confirmed_signals, unconfirmed_signal])
+    close_pos = (
+        (positions_df["Close_Position"] < 0)
+        & (positions_df["Position"] != 0)
+    )
+
+    open_pos_df = positions_df[open_pos]["Open_Position"].cumsum()
+    close_pos_df = positions_df[close_pos]["Close_Position"].cumsum()
+    trade_pos_df = open_pos_df.combine_first(close_pos_df)
+
+    positions_df["Trade_position"] = trade_pos_df.astype(str)
+
+    positions_df["Trade_position"] = positions_df["Trade_position"].ffill()
+    positions_df["Trade_position"] = positions_df["Trade_position"].replace(
+        np.nan, "0"
+    )
 
     if add_span_tag:
         long_color = "<b><span style='color: #00e676'>Open Position</span></b>"
@@ -269,41 +290,32 @@ def get_recommendation(
         short_color = (
             "<b><span style='color: #ef5350'>Close Position</span></b>"
         )
+        start_html = "<b><span style='color: #fff'> | "
+        end_html = " |</b></span>"
 
     else:
         long_color = "Open Position"
         do_nothing_color = "——————"
         short_color = "Close Position"
+        start_html = ""
+        end_html = ""
 
-    match return_dtype:
-        case "string":
-            recommendation = np.where(
-                signals > 0,
-                long_color,
-                np.where(signals == 0, do_nothing_color, short_color),
-            )
-            recommendation_series = pd.Series(
-                recommendation, index=signals.index
-            )
+    trade_sides = [
+        positions_df["Position"] == 1,
+        positions_df["Position"] == -1,
+    ]
 
-            recommendation_array = np.where(
-                (recommendation_series.shift(7) == long_color)
-                & (recommendation_series == do_nothing_color),
-                short_color,
-                recommendation_series,
-            )
+    trade_positions = "(" + positions_df["Trade_position"] + ") "
 
-            return pd.Series(
-                recommendation_array,
-                index=recommendation_series.index,
-                name=predict.name,
-            )
+    pos_size = start_html + positions_df["Open_trades"] + end_html
 
-        case "normal":
-            return signals
+    trade_results = [
+        trade_positions + long_color + pos_size,
+        trade_positions + short_color + pos_size,
+    ]
 
-        case "int":
-            return signals.astype(int)
+    positions_df["Recommendation"] = np.select(
+        trade_sides, trade_results, default=do_nothing_color
+    )
 
-        case "bool":
-            return signals > 0
+    return positions_df["Recommendation"]
