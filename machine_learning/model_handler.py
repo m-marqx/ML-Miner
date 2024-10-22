@@ -13,8 +13,8 @@ class ModelHandler:
     """
     A class for handling machine learning model evaluation.
 
-    Parameters:
-    -----------
+    Parameters
+    ----------
     estimator : object
         The machine learning model to be evaluated.
     X_test : array-like of shape (n_samples, n_features)
@@ -22,8 +22,8 @@ class ModelHandler:
     y_test : array-like of shape (n_samples,)
         True target values for testing.
 
-    Attributes:
-    -----------
+    Attributes
+    ----------
     x_test : array-like of shape (n_samples, n_features)
         Testing input samples.
     y_test : array-like of shape (n_samples,)
@@ -47,8 +47,8 @@ class ModelHandler:
         """
         Initialize the ModelHandler object.
 
-        Parameters:
-        -----------
+        Parameters
+        ----------
         estimator : object
             An instance of a scikit-learn estimator for classification or
             regression.
@@ -87,8 +87,8 @@ class ModelHandler:
         for a trading model using predicted probabilities and actual
         returns. It takes into account transaction fees for trading.
 
-        Parameters:
-        -----------
+        Parameters
+        ----------
         target_series : pd.Series
             A pandas Series containing the actual returns of the trading
             strategy.
@@ -97,8 +97,8 @@ class ModelHandler:
             for each trade.
             (default: 0.1)
 
-        Returns:
-        --------
+        Returns
+        -------
         pd.DataFrame:
             A tuple containing:
             - pd.DataFrame: A DataFrame with various columns
@@ -207,8 +207,8 @@ class ModelHandler:
         is created by plotting the True Positive Rate (TPR) against the
         False Positive Rate (FPR).
 
-        Parameters:
-        -----------
+        Parameters
+        ----------
         y_test : pd.Series, np.ndarray, or None
             The true labels of the test data. If None, the class object
             `y_test` will be used.
@@ -222,8 +222,8 @@ class ModelHandler:
             curve with AUC (Area Under the Curve) score will be
             returned.
 
-        Returns:
-        --------
+        Returns
+        -------
         If output is "DataFrame":
             pd.DataFrame
                 A DataFrame containing the False Positive Rates (FPR),
@@ -298,8 +298,8 @@ class ModelHandler:
         how well the estimator performs as more data is used for
         training.
 
-        Parameters:
-        -----------
+        Parameters
+        ----------
         train_size : np.ndarray or pd.Series, optional
             An array of training sizes or a Series of proportions to
             use for plotting the learning curve. If None, it defaults
@@ -310,8 +310,8 @@ class ModelHandler:
             scores
             (default: 5).
 
-        Returns:
-        --------
+        Returns
+        -------
         pd.DataFrame
             A DataFrame containing the mean and standard deviation of
             train and test scores for different training sizes. Columns
@@ -364,8 +364,8 @@ class ModelHandler:
         Generate a results report including a confusion matrix and a
         classification report.
 
-        Returns:
-        --------
+        Returns
+        -------
         str
             A string containing the results report.
         """

@@ -10,7 +10,7 @@ def adjust_predict_one_side(
     """
     Adjusts the maximum trades on one side of the data set.
 
-    Parameters:
+    Parameters
     ----------
     predict : pd.Series
         The input series containing the predicted values.
@@ -22,7 +22,7 @@ def adjust_predict_one_side(
         The side of the trade to adjust (1 for long and -1 for short).
         (default: 1).
 
-    Returns:
+    Returns
     -------
     pd.Series
         The adjusted series with maximum trades on one side.
@@ -52,7 +52,7 @@ def adjust_predict_both_side(
     """
     Adjusts the maximum trades on both sides of the data set.
 
-    Parameters:
+    Parameters
     ----------
     data_set : pd.Series
         The input data set.
@@ -61,7 +61,7 @@ def adjust_predict_both_side(
     max_trades : int
         The maximum number of trades.
 
-    Returns:
+    Returns
     -------
     pd.Series
         The adjusted data set.

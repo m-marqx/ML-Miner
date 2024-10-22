@@ -37,8 +37,8 @@ class KlineTimes:
         """
         Initialize the KlineTimes object
 
-        Parameters:
-        -----------
+        Parameters
+        ----------
         symbol : str
             The symbol of the asset.
         interval : str
@@ -83,8 +83,8 @@ class KlineTimes:
         """
         Calculate the maximum multiplier based on the interval.
 
-        Returns:
-        --------
+        Returns
+        -------
         int
             The maximum multiplier.
         """
@@ -123,14 +123,14 @@ class KlineTimes:
         """
         Get the end times for retrieving Kline data.
 
-        Parameters:
-        -----------
+        Parameters
+        ----------
         start_time : int, optional
             The start time for retrieving Kline data in milliseconds.
             (default: 1597118400000)
 
-        Returns:
-        --------
+        Returns
+        -------
         numpy.ndarray
             The array of end times.
         """

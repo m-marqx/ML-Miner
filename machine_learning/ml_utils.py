@@ -46,8 +46,8 @@ class DataHandler:
         """
         Initialize the DataHandler object.
 
-        Parameters:
-        -----------
+        Parameters
+        ----------
         dataframe : pd.DataFrame, pd.Series, or np.ndarray
             The input data to be processed. It can be a pandas DataFrame,
             Series, or a numpy array.
@@ -71,8 +71,8 @@ class DataHandler:
             - 1 if 'Target' > 1 (positive return)
             - 0 otherwise.
 
-        Returns:
-        --------
+        Returns
+        -------
         pd.DataFrame
             DataFrame with added target variables.
 

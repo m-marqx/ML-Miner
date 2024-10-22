@@ -86,8 +86,8 @@ class MathFeature:
         Calculate a rolling ratio feature based on the values of two
         rolling averages.
 
-        Parameters:
-        -----------
+        Parameters
+        ----------
         fast_length : int
             The window size for the fast rolling average.
         slow_length : int
@@ -96,8 +96,8 @@ class MathFeature:
             The pandas method used for rolling averages
             (e.g., "mean", "std", "median").
 
-        Returns:
-        --------
+        Returns
+        -------
         pd.DataFrame
             The original DataFrame with an additional column for the
             rolling ratio.
@@ -137,15 +137,15 @@ class MathFeature:
         """
         Compute ratio-based features.
 
-        Parameters:
-        -----------
+        Parameters
+        ----------
         length : int
             The window length for rolling statistics.
         method : str
             The method used for rolling averages
             (e.g., "mean", "std", "median").
-        Returns:
-        --------
+        Returns
+        -------
         pd.DataFrame
             Returns the DataFrame with ratio-based features added.
         """

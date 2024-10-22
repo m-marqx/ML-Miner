@@ -9,8 +9,8 @@ def feature_binning(
     """
     Perform feature binning using quantiles.
 
-    Parameters:
-    -----------
+    Parameters
+    ----------
     feature : pd.Series
         The input feature series to be binned.
     test_index : str or int
@@ -19,8 +19,8 @@ def feature_binning(
         The number of bins to use for binning the feature.
         (default: 10)
 
-    Returns:
-    --------
+    Returns
+    -------
     pd.Series
         The binned feature series.
 

@@ -18,7 +18,7 @@ class ModelMiner:
     """
     Class to search for the best model parameters.
 
-    Parameters:
+    Parameters
     ----------
     dataframe : pd.DataFrame
         The input dataframe containing the OHLC data.
@@ -34,7 +34,7 @@ class ModelMiner:
         The side of the trade to adjust
         (default : 1).
 
-    Attributes:
+    Attributes
     ----------
     ohlc : list
         The list of the OHLC columns.
@@ -78,7 +78,7 @@ class ModelMiner:
         side: int = 1,
     ):
         """
-        Parameters:
+        Parameters
         ----------
         predict : pd.Series
             The input series containing the predicted values.
@@ -477,7 +477,7 @@ class ModelMiner:
         """
         create catboost catboost model and return the metrics.
 
-        Parameters:
+        Parameters
         ----------
         feat_parameters : dict
             The feature parameters for model creation.
@@ -495,7 +495,7 @@ class ModelMiner:
             The cutoff point for the model
             (default: None).
 
-        Returns:
+        Returns
         -------
         dict
             The dictionary containing the best model parameters.
@@ -731,7 +731,7 @@ class ModelMiner:
         """
         Search for the best model parameters.
 
-        Parameters:
+        Parameters
         ----------
         test_index : int
             The test index.
@@ -742,7 +742,7 @@ class ModelMiner:
             The train in the middle parameter
             (default : True).
 
-        Returns:
+        Returns
         -------
         dict
             The dictionary containing the best model parameters.

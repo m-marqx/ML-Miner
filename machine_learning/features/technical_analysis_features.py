@@ -15,8 +15,8 @@ class TechnicalAnalysisFeatures:
     Class for creating and manipulating features for a machine learning
     model.
 
-    Parameters:
-    -----------
+    Parameters
+    ----------
     dataset : pd.DataFrame
         The dataset containing the features.
     test_index : int
@@ -25,8 +25,8 @@ class TechnicalAnalysisFeatures:
         The number of bins to use for binning the features.
         (default: 10)
 
-    Attributes:
-    -----------
+    Attributes
+    ----------
     dataset : pd.DataFrame
         The dataset containing the features.
     test_index : int
@@ -102,15 +102,15 @@ class TechnicalAnalysisFeatures:
         """
         Create the RSI (Relative Strength Index) feature.
 
-        Parameters:
-        -----------
+        Parameters
+        ----------
         source : pd.Series
             The source series for calculating RSI.
         length : int
             The length of the RSI calculation.
 
-        Returns:
-        --------
+        Returns
+        -------
         pd.DataFrame
             The dataset with the RSI feature added.
         """
@@ -143,8 +143,8 @@ class TechnicalAnalysisFeatures:
         """
         Create the slow stochastic feature.
 
-        Parameters:
-        -----------
+        Parameters
+        ----------
         source_column : str
             The column name of the source data.
         k_length : int, optional
@@ -154,8 +154,8 @@ class TechnicalAnalysisFeatures:
         d_smoothing : int, optional
             The smoothing factor for %D. (default: 3)
 
-        Returns:
-        --------
+        Returns
+        -------
         pd.DataFrame
             The dataset with the slow stochastic feature added.
         """
@@ -290,8 +290,8 @@ class TechnicalAnalysisFeatures:
         """
         Create the CCI (Commodity Channel Index) feature.
 
-        Parameters:
-        -----------
+        Parameters
+        ----------
         source : pd.Series
             The source series for calculating CCI.
         length : int, optional
@@ -301,8 +301,8 @@ class TechnicalAnalysisFeatures:
             The moving average method to use for CCI calculation.
             (default: 'sma')
 
-        Returns:
-        --------
+        Returns
+        -------
         pd.DataFrame
             The dataset with the CCI feature added.
         """
@@ -335,8 +335,8 @@ class TechnicalAnalysisFeatures:
         """
         Create the Didi Index feature.
 
-        Parameters:
-        -----------
+        Parameters
+        ----------
 
         source : pd.Series
             The source series for calculating the DIDI index.
@@ -350,8 +350,8 @@ class TechnicalAnalysisFeatures:
             The length of the long EMA.
             (default: 20)
 
-        Returns:
-        --------
+        Returns
+        -------
         pd.DataFrame
             The dataset with the DIDI index feature added.
         """
@@ -518,8 +518,8 @@ class TechnicalAnalysisFeatures:
         """
         Create the TRIX (Triple Exponential Moving Average) feature.
 
-        Parameters:
-        -----------
+        Parameters
+        ----------
         source : pd.Series
             The source series for calculating the TRIX.
         length : int, optional
@@ -532,8 +532,8 @@ class TechnicalAnalysisFeatures:
             The moving average method to use for TRIX calculation.
             (default: 'ema')
 
-        Returns:
-        --------
+        Returns
+        -------
         pd.DataFrame
             The dataset with the TRIX feature added.
         """
@@ -579,8 +579,8 @@ class TechnicalAnalysisFeatures:
         """
         Create the SMIO (SMI Ergotic Oscillator) feature.
 
-        Parameters:
-        -----------
+        Parameters
+        ----------
         source : pd.Series
             The source series for calculating the SMIO.
         short_length : int, optional
@@ -591,8 +591,8 @@ class TechnicalAnalysisFeatures:
             The moving average method to use for SMIO calculation.
             (default: 'ema')
 
-        Returns:
-        --------
+        Returns
+        -------
         pd.DataFrame
             The dataset with the SMIO feature added.
         """
@@ -632,8 +632,8 @@ class TechnicalAnalysisFeatures:
         """
         Create the TSI (True Strength Index) feature.
 
-        Parameters:
-        -----------
+        Parameters
+        ----------
         source : pd.Series
             The source series for calculating the TSI.
         short_length : int, optional
@@ -646,8 +646,8 @@ class TechnicalAnalysisFeatures:
             The moving average method to use for TSI calculation.
             (default: 'ema')
 
-        Returns:
-        --------
+        Returns
+        -------
         pd.DataFrame
             The dataset with the TSI feature added.
         """
@@ -688,8 +688,8 @@ class TechnicalAnalysisFeatures:
         """
         Create the Ichimoku Clouds feature.
 
-        Parameters:
-        -----------
+        Parameters
+        ----------
         conversion_periods : int
             The conversion line period.
         base_periods : int
@@ -786,8 +786,8 @@ class TechnicalAnalysisFeatures:
         """
         Create the Ichimoku Clouds feature.
 
-        Parameters:
-        -----------
+        Parameters
+        ----------
         conversion_periods : int
             The conversion line period.
         base_periods : int
@@ -909,8 +909,8 @@ class TechnicalAnalysisFeatures:
         """
         Create the BB Trend (Bollinger Bands Trend) feature.
 
-        Parameters:
-        -----------
+        Parameters
+        ----------
         source : pd.Series
             The source series for calculating the BB Trend.
         short_length : int, optional
@@ -923,8 +923,8 @@ class TechnicalAnalysisFeatures:
             The moving average method to use for BB Trend calculation.
             (default: 'ema')
 
-        Returns:
-        --------
+        Returns
+        -------
         pd.DataFrame
             The dataset with the BB Trend feature added.
         """

@@ -14,8 +14,8 @@ class CcxtAPI:
     A class for interacting with the CCXT library to retrieve financial
     market data.
 
-    Parameters:
-    -----------
+    Parameters
+    ----------
     symbol : str
         The trading symbol for the asset pair (e.g., 'BTC/USD').
     interval : str
@@ -31,8 +31,8 @@ class CcxtAPI:
         If True, print verbose logging messages during data retrieval
         (default: False).
 
-    Attributes:
-    -----------
+    Attributes
+    ----------
     symbol : str
         The trading symbol for the asset pair.
     interval : str
@@ -88,8 +88,8 @@ class CcxtAPI:
         """
         Initialize the CcxtAPI object.
 
-        Parameters:
-        -----------
+        Parameters
+        ----------
         symbol : str
             The trading symbol for the asset pair.
         interval : str
@@ -155,8 +155,8 @@ class CcxtAPI:
         It can be used to determine the starting point for fetching
         historical data.
 
-        Returns:
-        --------
+        Returns
+        -------
         int or None
             The Unix timestamp of the first candle found, or None
             if not found.
@@ -199,8 +199,8 @@ class CcxtAPI:
         Fetch all K-line data for the specified symbol and interval
         using a for loop.
 
-        Parameters:
-        -----------
+        Parameters
+        ----------
         until : None
             The end time for fetching K-line data.
         ignore_unsupported_exchanges : bool, optional
@@ -208,8 +208,8 @@ class CcxtAPI:
             symbol.
             (default: False).
 
-        Returns:
-        --------
+        Returns
+        -------
         CcxtAPI
             Returns the CcxtAPI object with the fetched K-line data.
         """
@@ -291,8 +291,8 @@ class CcxtAPI:
         Convert the fetched K-line data into a pandas DataFrame in
         OHLCV format.
 
-        Returns:
-        --------
+        Returns
+        -------
         pd.DataFrame
             Returns a pandas DataFrame containing OHLCV data.
         """
@@ -322,14 +322,14 @@ class CcxtAPI:
         identifies the last timestamp in the provided Klines data and
         retrieves new data starting from that point.
 
-        Parameters:
-        -----------
+        Parameters
+        ----------
         klines : list or pd.DataFrame
             The historical Klines data to be updated. This can be
             either a list of lists or a pandas DataFrame.
 
-        Returns:
-        --------
+        Returns
+        -------
         list or pd.DataFrame
             The updated Klines data with the new data appended.
         """
@@ -366,8 +366,8 @@ class CcxtAPI:
         Check for irregularities in the K-line data timestamps and
         return a DataFrame with discrepancies.
 
-        Returns:
-        --------
+        Returns
+        -------
         pd.DataFrame
             Returns a pandas DataFrame with discrepancies in
             timestamps.
