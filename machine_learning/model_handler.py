@@ -1,12 +1,5 @@
-from typing import Literal
 import pandas as pd
 import numpy as np
-import plotly.graph_objects as go
-import plotly.express as px
-from sklearn import metrics
-from sklearn.model_selection import (
-    learning_curve,
-)
 
 
 class ModelHandler:
