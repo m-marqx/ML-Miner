@@ -4194,6 +4194,3 @@ class TestAttributeSetters(unittest.TestCase):
         self.assertEqual(
             self.model_features.set_normalize(True), self.model_features
         )
-
-if __name__ == '__main__':
-    unittest.main()
