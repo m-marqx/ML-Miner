@@ -1,0 +1,9 @@
+tqdm==4.65.0
+tradingview_indicators==0.1.1.0
+catboost==1.2.2
+klib==1.1.1
+ccxt==4.0.86
+plotly==5.15.0
+pandas==2.0.3
+pyarrow==12.0.1
+numpy==1.23.5
