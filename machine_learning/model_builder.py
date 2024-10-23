@@ -7,10 +7,8 @@ import klib
 
 from machine_learning.model_handler import ModelHandler
 from machine_learning.model_features import ModelFeatures
+from machine_learning.adjust_predicts import adjust_predict_one_side
 
-from machine_learning.model_creator import (
-    adjust_predict_one_side,
-)
 
 def adjust_max_trades(data_set, off_days, max_trades, pct_adj, side=1):
     """

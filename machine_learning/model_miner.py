@@ -7,9 +7,7 @@ import numpy as np
 
 from machine_learning.ml_utils import DataHandler
 from machine_learning.model_builder import model_creation
-from machine_learning.model_creator import (
-    adjust_predict_one_side,
-)
+from machine_learning.adjust_predicts import adjust_predict_one_side
 from machine_learning.ols_metrics import calculate_r2, calculate_coef
 
 from utils import Statistics
