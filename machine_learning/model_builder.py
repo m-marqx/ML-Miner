@@ -104,6 +104,7 @@ def adjust_max_trades(
     )
     return data_set
 
+
 def calculate_model(
     dataset: pd.DataFrame,
     feats: list,
@@ -149,7 +150,6 @@ def calculate_model(
     """
     data_frame = klib.convert_datatypes(dataset)
 
-    #split the dataset into train, test, and validation sets
     train_set = data_frame.iloc[:test_index]
     test_set = data_frame.iloc[test_index : test_index * 2]
     validation_set = data_frame.iloc[test_index * 2 :]
@@ -266,8 +266,8 @@ def calculate_model(
                 all_x,
                 all_y,
             )
-
-    raise ValueError("Invalid output parameter")
+        case _:
+            raise ValueError("Invalid output parameter")
 
 def model_creation(
     feat_parameters: dict,
