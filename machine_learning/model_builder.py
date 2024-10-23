@@ -10,7 +10,13 @@ from machine_learning.model_features import ModelFeatures
 from machine_learning.adjust_predicts import adjust_predict_one_side
 
 
-def adjust_max_trades(data_set, off_days, max_trades, pct_adj, side=1):
+def adjust_max_trades(
+    data_set: pd.DataFrame,
+    off_days: int,
+    max_trades: int,
+    pct_adj: float,
+    side: int = 1,
+) -> pd.DataFrame:
     """
     Adjusts the input dataset based on the maximum number of trades,
     off days, and percentage adjustment.
