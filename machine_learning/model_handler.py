@@ -27,15 +27,7 @@ class ModelHandler:
         Predicted class probabilities (if available).
     _has_predic_proba : bool
         Indicates whether the estimator has predict_proba method.
-
-    Properties:
-    -----------
-    results_report : str
-        A string containing a results report including a confusion matrix,
-        a classification report, AUC, Gini index (if predict_proba is
-        available), and support.
     """
-
     def __init__(self, estimator, X_test, y_test) -> None:
         """
         Initialize the ModelHandler object.
