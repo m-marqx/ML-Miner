@@ -12,7 +12,7 @@ from typing import Literal
 import pandas as pd
 import numpy as np
 import fastdtw
-from custom_exceptions.argument import InvalidArgumentError
+from custom_exceptions.invalid_arguments import InvalidArgumentError
 
 
 class DynamicTimeWarping:

@@ -1,6 +1,6 @@
 from typing import Literal
 import pandas as pd
-from custom_exceptions.argument import InvalidArgumentError
+from custom_exceptions.invalid_arguments import InvalidArgumentError
 
 
 class MathFeature:
