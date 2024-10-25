@@ -10,3 +10,6 @@ class TestCalculateOLS(unittest.TestCase):
 
     def test_calculate_R2(self):
         self.assertEqual(calculate_r2(self.dataset), 0.0021)
+
+    def test_calculate_coef(self):
+        self.assertEqual(calculate_coef(self.dataset), -0.0438764)
