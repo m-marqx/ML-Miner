@@ -2,9 +2,10 @@ from ast import literal_eval
 
 import pandas as pd
 import plotly.express as px
+import statsmodels.api as sm
 
 
-def calculate_r2(data: pd.Series) -> float:
+def calculate_r2(data: pd.Series, precision: int = 6) -> float:
     """
     Calculate the R-squared value from the given data.
 
@@ -19,12 +20,11 @@ def calculate_r2(data: pd.Series) -> float:
         The R-squared value.
 
     """
-    return literal_eval(
-        px.scatter(data, trendline="ols")
-        .data[1]["hovertemplate"]
-        .split(">=")[1]
-        .split("<br>")[0]
-    )
+    x = data.reset_index().index
+    x = sm.add_constant(x)
+    fit_results = sm.OLS(data, x, missing="drop").fit()
+
+    return round(fit_results.rsquared, precision)
 
 
 def calculate_coef(data: pd.Series) -> float:
