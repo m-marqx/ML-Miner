@@ -6,7 +6,7 @@ import pandas as pd
 import ccxt
 from tqdm import tqdm
 
-from utils.time_utils import interval_to_milliseconds
+from utils import interval_to_milliseconds
 from api.kline_utils import KlineTimes
 
 class CcxtAPI:
@@ -107,8 +107,8 @@ class CcxtAPI:
         self.since = since
         self.exchange = exchange
         self.is_progress_bar_verbose = verbose == "Progress_Bar"
-        self.max_interval = KlineTimes(symbol, interval).get_max_interval
-        self.utils = KlineTimes(self.symbol, self.max_interval)
+        self.max_interval = KlineTimes(interval).get_max_interval
+        self.utils = KlineTimes(self.max_interval)
 
         self.max_multiplier = (
             int(self.utils.calculate_max_multiplier()) if interval != '1w'
