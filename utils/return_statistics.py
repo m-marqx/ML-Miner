@@ -50,7 +50,7 @@ class Statistics:
         dataframe: pd.Series | pd.DataFrame,
         time_span: str = "A",
         risk_free_rate: float = 0,
-        is_percent: bool = True,
+        is_percent: bool = False,
     ):
         """Calculates performance metrics based on the provided data.
 
@@ -82,8 +82,6 @@ class Statistics:
         `0.00007936507`  (0.02 / 252) if the asset has 252 trading days.
 
         """
-        self.is_percent = is_percent
-
         if isinstance(dataframe, pd.Series):
             self.dataframe = pd.DataFrame({"Result": dataframe})
         elif "Result" in dataframe.columns:
@@ -101,6 +99,12 @@ class Statistics:
             .query("Result != 0")
             .dropna()
         )
+
+        self.is_percent = is_percent
+
+        if self.is_percent:
+            self.dataframe = self.dataframe * 100
+
 
         self.time_span = time_span
         self.risk_free_rate = risk_free_rate
@@ -146,9 +150,6 @@ class Statistics:
             total trade, win rate, loss rate, and expected value (EM).
 
         """
-        if self.is_percent:
-            self.dataframe = self.dataframe * 100
-
         gain = self.dataframe["Result"] > 0
         loss = self.dataframe["Result"] < 0
 
