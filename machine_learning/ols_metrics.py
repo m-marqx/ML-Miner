@@ -24,7 +24,7 @@ def calculate_r2(data: pd.Series, precision: int = 6) -> float:
     return float(f"{fit_results.rsquared:.{precision}g}")
 
 
-def calculate_coef(data: pd.Series, precision: int = 7) -> float:
+def calculate_coef(data: pd.Series, precision: int = 6) -> float:
     """
     Calculate the coefficient value from the given data.
 
@@ -38,8 +38,8 @@ def calculate_coef(data: pd.Series, precision: int = 7) -> float:
     float
         The coefficient value.
     """
-    x = data.reset_index().index
-    x = sm.add_constant(x)
-    fit_results = sm.OLS(data, x, missing="drop").fit()
+    x = data.index
+    x = sm.add_constant(x.astype("int64") / 10**9)
+    fit_results = sm.OLS(data.astype("float64"), x, missing="drop").fit()
 
-    return round(fit_results.params[1], precision)
+    return float(f"{fit_results.params[1]:.{precision}g}")
