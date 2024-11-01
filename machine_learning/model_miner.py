@@ -8,7 +8,7 @@ import numpy as np
 from machine_learning.ml_utils import DataHandler
 from machine_learning.model_builder import model_creation
 from machine_learning.adjust_predicts import adjust_predict_one_side
-from machine_learning.ols_metrics import calculate_r2, calculate_coef
+from machine_learning.ols_metrics import OLSMetrics
 
 from utils import Statistics
 
@@ -596,11 +596,15 @@ class ModelMiner:
             )
 
             try:
-                r2_2022 = calculate_r2(bearmarket_2022)
-                ols_coef_2022 = calculate_coef(bearmarket_2022)
+                bearmarket_ols = OLSMetrics(bearmarket_2022)
 
-                r2_val = calculate_r2(mta_val["Liquid_Result"].cumprod())
-                ols_coef_val = calculate_coef(mta_val["Liquid_Result"].cumprod())
+                r2_2022 = bearmarket_ols.calculate_r2()
+                ols_coef_2022 = bearmarket_ols.calculate_coef()
+
+                result_ols = OLSMetrics(mta_val["Liquid_Result"].cumprod())
+
+                r2_val = result_ols.calculate_r2()
+                ols_coef_val = result_ols.calculate_coef()
 
             except Exception:
                 r2_2022 = -404
