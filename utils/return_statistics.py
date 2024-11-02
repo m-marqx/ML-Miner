@@ -100,11 +100,8 @@ class Statistics:
             .dropna()
         )
 
-        self.is_percent = is_percent
-
-        if self.is_percent:
+        if is_percent:
             self.dataframe = self.dataframe * 100
-
 
         self.time_span = time_span
         self.risk_free_rate = risk_free_rate
