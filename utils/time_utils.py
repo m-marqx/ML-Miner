@@ -9,18 +9,32 @@ Functions:
 milliseconds.
 """
 
-def interval_to_milliseconds(interval: str):
-    """Convert a Binance interval string to milliseconds
+from custom_exceptions.invalid_arguments import InvalidArgumentError
 
-    :param interval: Binance interval string, e.g.:
-    1s, 1m, 3m, 5m, 15m, 30m, 1h, 2h, 4h, 6h, 8h, 12h, 1d, 3d, 1w
 
-    :return:
-        int value of interval in milliseconds
-        None if interval prefix is not a decimal integer
-        None if interval suffix is not one of m, h, d, w
+def interval_to_milliseconds(interval: str) -> int:
+    """
+    Convert a interval string to milliseconds
+
+    Parameters
+    ----------
+    interval : str
+        The interval string to convert. E.g. "1m", "1h", "1d", etc.
+
+    Returns
+    -------
+    int
+        The interval in milliseconds.
+
+    Raises
+    ------
+    InvalidArgumentError
+        If the interval string is invalid.
 
     """
+    if not interval:
+        raise InvalidArgumentError("Invalid interval string.")
+
     seconds_per_unit: dict = {
         "s": 1,
         "m": 60,
@@ -28,7 +42,10 @@ def interval_to_milliseconds(interval: str):
         "d": 24 * 60 * 60,
         "w": 7 * 24 * 60 * 60,
     }
-    try:
+    has_unit = interval[-1] in seconds_per_unit
+    is_integer_interval = interval[:-1].isdigit()
+
+    if has_unit and is_integer_interval:
         return int(interval[:-1]) * seconds_per_unit[interval[-1]] * 1000
-    except (ValueError, KeyError):
-        return None
+
+    raise InvalidArgumentError("Invalid interval string.")
