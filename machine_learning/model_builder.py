@@ -58,7 +58,6 @@ def adjust_max_trades(
         data_set["Predict"], max_trades, off_days, side
     )
 
-    # set the predicted probabilities to 0 if the prediction is 0 (No trade)
     data_set["y_pred_probs"] = np.where(
         data_set["Predict"] == 0, 0, data_set["y_pred_probs"]
     )
