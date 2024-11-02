@@ -20,7 +20,9 @@ class TestStatistics(unittest.TestCase):
         self.statistics = Statistics(self.data)
 
     def test_calculate_all_statistics_is_percent(self):
-        results = Statistics(self.data, is_percent=True).calculate_all_statistics()
+        results = Statistics(
+            self.data, is_percent=True
+        ).calculate_all_statistics()
 
         expected_data = [
             [-4.03, -0.03, -0.06],
@@ -156,7 +158,7 @@ class TestStatistics(unittest.TestCase):
     def test_calculate_expected_value_resampled_is_percent(self):
         results = Statistics(
             self.data, is_percent=True
-        ).calculate_expected_value('resampled')
+        ).calculate_expected_value("resampled")
 
         expected_data = [
             -4.032069588975256,
@@ -191,7 +193,7 @@ class TestStatistics(unittest.TestCase):
     def test_calculate_expected_value_resampled(self):
         results = Statistics(
             self.data, is_percent=False
-        ).calculate_expected_value('resampled')
+        ).calculate_expected_value("resampled")
 
         expected_data = [
             -0.04032069588975256,
@@ -225,17 +227,26 @@ class TestStatistics(unittest.TestCase):
 
     def test_calculate_expected_value_output_error(self):
         with self.assertRaises(ValueError):
-            Statistics(self.data, is_percent=False).calculate_expected_value(output='invalid')
+            Statistics(self.data, is_percent=False).calculate_expected_value(
+                output="invalid"
+            )
 
-        with self.assertRaisesRegex(ValueError, "Invalid output type. Use 'complete' or 'resampled'."):
-            Statistics(self.data, is_percent=False).calculate_expected_value(output='invalid')
+        with self.assertRaisesRegex(
+            ValueError, "Invalid output type. Use 'complete' or 'resampled'."
+        ):
+            Statistics(self.data, is_percent=False).calculate_expected_value(
+                output="invalid"
+            )
 
     def test_calculate_expected_value_complete_is_percent(self):
         results = Statistics(
             self.data, is_percent=False
-        ).calculate_expected_value('complete')
+        ).calculate_expected_value("complete")
 
-        expected_value = pd.read_parquet("utils/tests/test_data/expected_value.parquet")
+        expected_value = pd.read_parquet(
+            "utils/tests/test_data/expected_value.parquet"
+        )
+
         expected_value.index = pd.date_range("1/1/2010", periods=2000)
 
         pd.testing.assert_frame_equal(results, expected_value)
@@ -243,9 +254,12 @@ class TestStatistics(unittest.TestCase):
     def test_calculate_expected_value_complete(self):
         results = Statistics(
             self.data, is_percent=True
-        ).calculate_expected_value('complete')
+        ).calculate_expected_value("complete")
 
-        expected_value = pd.read_parquet("utils/tests/test_data/expected_value_is_percent.parquet")
+        expected_value = pd.read_parquet(
+            "utils/tests/test_data/expected_value_is_percent.parquet"
+        )
+
         expected_value.index = pd.date_range("1/1/2010", periods=2000)
 
         pd.testing.assert_frame_equal(results, expected_value)
