@@ -147,6 +147,11 @@ class DynamicTimeWarping:
             If False, the original sequences will stay intact.
             (default: False)
 
+        Raises
+        ------
+        InvalidArgumentError
+            If the method is not "ratio" or "absolute".
+
         Returns
         -------
         pd.Series
