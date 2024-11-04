@@ -8,6 +8,7 @@ from tqdm import tqdm
 
 from utils import interval_to_milliseconds
 from api.kline_utils import KlineTimes
+from custom_exceptions.invalid_arguments import InvalidArgumentError
 
 class CcxtAPI:
     """
@@ -107,8 +108,7 @@ class CcxtAPI:
         self.since = since
         self.exchange = exchange
         self.is_progress_bar_verbose = verbose == "Progress_Bar"
-        self.max_interval = KlineTimes(interval).get_max_interval
-        self.utils = KlineTimes(self.max_interval)
+        self.utils = KlineTimes(interval, adjust_interval=True)
 
         self.max_multiplier = (
             int(self.utils.calculate_max_multiplier()) if interval != '1w'
