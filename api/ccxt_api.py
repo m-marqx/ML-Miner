@@ -224,7 +224,7 @@ class CcxtAPI:
             )
 
         if isinstance(self.exchange, not_supported_types):
-            raise ValueError(f"{self.exchange} is not supported")
+            raise InvalidArgumentError(f"{self.exchange} is not supported")
 
         klines = []
         klines_list = []
