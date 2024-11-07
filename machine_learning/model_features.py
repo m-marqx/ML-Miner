@@ -534,13 +534,13 @@ class ModelFeatures:
 
             if column != "histogram":
                 warnings.warn(
-                    f"{column} isn't compatible with normalization"
+                    f"{column} isn't compatible with MACD normalization"
                     + " and will be set to 'histogram'."
                 )
 
             if diff_method != "ratio":
                 warnings.warn(
-                    f"{diff_method} isn't compatible with normalization"
+                    f"{diff_method} isn't compatible with MACD normalization"
                     + " and will be set to 'ratio'."
                 )
 
