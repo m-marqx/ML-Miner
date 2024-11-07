@@ -281,7 +281,7 @@ class ModelMinerTest(unittest.TestCase):
 
             assert len(w) == 1
             assert issubclass(w[-1].category, UserWarning)
-            assert "signal isn't compatible with normalization and will be set to 'histogram'." in str(w[-1].message)
+            assert "signal isn't compatible with MACD normalization and will be set to 'histogram'." in str(w[-1].message)
 
     def test_create_model(self):
         np.random.seed(120)
