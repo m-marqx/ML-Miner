@@ -132,12 +132,15 @@ class BlockscoutAPI:
         )
         items = response.json()["items"]
 
-        swap_name = "processRouteWithTransferValueOutput"
-
         swap_count = 0
-        swaps_df = pd.DataFrame(items).query(
-            "method == 'processRouteWithTransferValueOutput'"
+        data = pd.DataFrame(items)
+        indexes = (
+            data.query("method != 'approve' and status == 'ok'")["method"]
+            .dropna()
+            .index
         )
+
+        swaps_df = data.loc[indexes].copy()
 
         fees_df = (
             pd.DataFrame(
@@ -146,27 +149,22 @@ class BlockscoutAPI:
             )["value"].astype(float) / 10**18
         )
 
-        swap_qty = swaps_df.shape[0]
+        swap_qty = len(indexes)
 
         swaps = []
 
         self.logger.info("searching swaps...")
 
-        for x in swaps_df.index.tolist():
-            is_swap = items[x]["method"] == swap_name
+        for x in indexes.tolist():
+            txid = items[x]["hash"]
 
-            if is_swap:
-                txid = items[x]["hash"]
+            swap = self.get_transactions(txid, coin_names)
+            swap_count += 1
 
-                swap = self.get_transactions(txid, coin_names)
-                swap_count += 1
+            self.logger.info("%.2f%% complete", (swap_count / swap_qty) * 100)
 
-                self.logger.info(
-                    "%.2f%% complete", (swap_count / swap_qty) * 100
-                )
-
-                swap["txn_fee"] = fees_df.loc[x]
-                swaps.append(swap)
+            swap["txn_fee"] = fees_df.loc[x]
+            swaps.append(swap)
 
             if swap_count == 0:
                 logging.info("no swaps found")
