@@ -111,26 +111,37 @@ class TestBlockscoutAPI(unittest.TestCase):
                     "hash": "0xf0",
                     "method" : "processRouteWithTransferValueOutput",
                     "fee" : {'type': 'actual', 'value': '7022820013343358'},
+                    "status": "ok",
                 },
                 {
                     "hash": "0xf1",
                     "method" : "processRouteWithTransferValueOutput",
                     "fee" : {'type': 'actual', 'value': '4945950006759465'},
+                    "status": "ok",
                 },
                 {
                     "hash": "0xf2",
                     "method" : "processRouteWithTransferValueOutput",
                     "fee" : {'type': 'actual', 'value': '6832756486003916'},
+                    "status": "ok",
                 },
                 {
                     "hash": "0xf3",
                     "method" : "processRouteWithTransferValueOutput",
                     "fee" : {'type': 'actual', 'value': '7861015823084520'},
+                    "status": "ok",
                 },
                 {
                     "hash": "0xf4",
                     "method" : "processRouteWithTransferValueOutput",
                     "fee" : {'type': 'actual', 'value': '4802190080676792'},
+                    "status": "ok",
+                },
+                {
+                    "hash": "0xf5",
+                    "method" : "processRouteWithTransferValueOutput",
+                    "fee" : {'type': 'actual', 'value': '9602190080676792'},
+                    "status": "error",
                 },
             ]
         }
@@ -263,26 +274,37 @@ class TestBlockscoutAPI(unittest.TestCase):
                     "hash": "0xf0",
                     "method" : "processRouteWithTransferValueOutput",
                     "fee" : {'type': 'actual', 'value': '7022820013343358'},
+                    "status": "ok",
                 },
                 {
                     "hash": "0xf1",
                     "method" : "processRouteWithTransferValueOutput",
                     "fee" : {'type': 'actual', 'value': '4945950006759465'},
+                    "status": "ok",
                 },
                 {
                     "hash": "0xf2",
                     "method" : "processRouteWithTransferValueOutput",
                     "fee" : {'type': 'actual', 'value': '6832756486003916'},
+                    "status": "ok",
                 },
                 {
                     "hash": "0xf3",
                     "method" : "processRouteWithTransferValueOutput",
                     "fee" : {'type': 'actual', 'value': '7861015823084520'},
+                    "status": "ok",
                 },
                 {
                     "hash": "0xf4",
                     "method" : "processRouteWithTransferValueOutput",
                     "fee" : {'type': 'actual', 'value': '4802190080676792'},
+                    "status": "ok",
+                },
+                {
+                    "hash": "0xf5",
+                    "method" : "processRouteWithTransferValueOutput",
+                    "fee" : {'type': 'actual', 'value': '9602190080676792'},
+                    "status": "error",
                 },
             ]
         }
