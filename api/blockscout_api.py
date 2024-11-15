@@ -69,7 +69,7 @@ class BlockscoutAPI:
         """
         url = f"{self.blockscout_api_url}/transactions/{txid}/token-transfers"
 
-        response = requests.get(url, params={"type": "ERC-20"}, timeout=10)
+        response = requests.get(url, params={"type": "ERC-20"}, timeout=30)
         data = response.json()
 
         first_coin_value = literal_eval(data["items"][0]["total"]["value"])
