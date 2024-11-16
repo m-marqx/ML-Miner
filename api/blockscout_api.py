@@ -128,7 +128,7 @@ class BlockscoutAPI:
         url = f"{self.blockscout_api_url}/addresses/{wallet}/transactions"
 
         response = requests.get(
-            url, params={"filter": "to | from"}, timeout=10
+            url, params={"filter": "to | from"}, timeout=30
         )
         items = response.json()["items"]
 
