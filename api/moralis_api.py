@@ -66,3 +66,48 @@ class MoralisAPI:
 
         if verbose:
             self.logger.setLevel(logging.INFO)
+
+    def process_transaction_data(self, data: list) -> list:
+        """
+        Processes transaction data for a given transaction.
+
+        Parameters
+        ----------
+        data : list
+            The transaction data to process.
+
+        Returns
+        -------
+        list
+            The processed transaction data.
+
+        Raises
+        ------
+        ValueError
+            If the data has less than 2 elements.
+        """
+        if len(data) == 2:
+            return data
+
+        if len(data) > 2:
+            df = pd.DataFrame(data)
+            default_columns = df.columns.tolist()
+            value_columns = [
+                "value",
+                "value_formatted",
+            ]
+
+            df[value_columns] = df[value_columns].astype(float)
+            df = df.groupby("direction").agg(
+                {
+                    col: "sum" if col in value_columns else "first"
+                    for col in default_columns
+                }
+            )
+
+            ordened_df = df.loc[["send", "receive"]][default_columns]
+
+            return [ordened_df.iloc[x].to_dict() for x in range(df.shape[0])]
+
+        raise ValueError("data has less than 2 elements")
+
