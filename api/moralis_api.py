@@ -203,3 +203,62 @@ class MoralisAPI:
 
         return swaps_data
 
+    def get_account_swaps(self, wallet: str) -> pd.DataFrame:
+        """
+        Retrieves all swaps for a given wallet address.
+
+        Parameters
+        ----------
+        wallet : str
+            The wallet address to retrieve swaps for.
+
+        Returns
+        -------
+        pandas.DataFrame
+            A DataFrame containing details of all swaps for the given
+            wallet address.
+        """
+        swaps_list = self.get_transactions(wallet)
+        swaps_data = self.get_swaps(swaps_list)
+
+        swap_columns = ["token_symbol", "value_formatted"]
+        from_df = pd.DataFrame(pd.DataFrame(swaps_data)[0].tolist())[
+            swap_columns
+        ]
+        from_df = from_df.rename(
+            columns={
+                "token_symbol": "from_coin_name",
+                "value_formatted": "from",
+            }
+        )
+
+        to_df = pd.DataFrame(pd.DataFrame(swaps_data)[1].tolist())[
+            swap_columns
+        ]
+        to_df = to_df.rename(
+            columns={"token_symbol": "to_coin_name", "value_formatted": "to"}
+        )
+
+        fee_df = pd.DataFrame(pd.DataFrame(swaps_data)[2].tolist())
+
+        columns_name = [
+            "from",
+            "to",
+            "USD Price",
+            "from_coin_name",
+            "to_coin_name",
+            "txn_fee",
+        ]
+
+        swaps_df = pd.concat([from_df, to_df, fee_df], axis=1)
+
+        swaps_df[["from", "to"]] = swaps_df[["from", "to"]].astype(float)
+
+        swaps_df["USD Price"] = np.where(
+            swaps_df["to_coin_name"].str.startswith("USD"),
+            swaps_df["to"] / swaps_df["from"],
+            swaps_df["from"] / swaps_df["to"],
+        )
+
+        swaps_df = swaps_df[columns_name]
+        return swaps_df
