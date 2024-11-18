@@ -154,3 +154,52 @@ class MoralisAPI:
 
         return swaps
 
+    def get_swaps(self, swaps: list) -> list:
+        """
+        Retrieves all swaps data for a given wallet address.
+
+        Parameters
+        ----------
+        swaps : list
+            The swaps to retrieve data for.
+
+        Returns
+        -------
+        list
+            A list of dictionaries, each containing details of a swap
+            transaction.
+        """
+        swaps_data = []
+
+        transactions_df = pd.DataFrame(swaps)
+        fee_columns = ["gas_price", "receipt_gas_used"]
+        transactions_df[fee_columns] = transactions_df[fee_columns].astype(
+            float
+        )
+
+        formatted_gas_price = transactions_df["gas_price"] / 10**18
+        fees_df = formatted_gas_price * transactions_df["receipt_gas_used"]
+
+        for idx, x in enumerate(swaps):
+            try:
+                swap = self.process_transaction_data(x["erc20_transfers"])
+
+            except ValueError as exc:
+                erc20_transfer_direction = x["erc20_transfers"][0]["direction"]
+
+                if erc20_transfer_direction == "send":
+                    x = x["erc20_transfers"] + x["native_transfers"]
+
+                elif erc20_transfer_direction == "receive":
+                    x = x["native_transfers"] + x["erc20_transfers"]
+
+                else:
+                    raise ValueError("unknown direction") from exc
+
+                swap = self.process_transaction_data(x)
+
+            fee = [{"txn_fee": fees_df.iloc[idx]}]
+            swaps_data.append(swap + fee)
+
+        return swaps_data
+
