@@ -176,14 +176,8 @@ class MoralisAPI:
         """
         swaps_data = []
 
-        transactions_df = pd.DataFrame(swaps)
-        fee_columns = ["gas_price", "receipt_gas_used"]
-        transactions_df[fee_columns] = transactions_df[fee_columns].astype(
-            float
-        )
-
-        formatted_gas_price = transactions_df["gas_price"] / 10**18
-        fees_df = formatted_gas_price * transactions_df["receipt_gas_used"]
+        infos_df = pd.DataFrame(swaps)
+        infos_df["transaction_fee"] = infos_df["transaction_fee"].astype(float)
 
         for idx, x in enumerate(swaps):
             try:
@@ -203,8 +197,9 @@ class MoralisAPI:
 
                 swap = self.process_transaction_data(x)
 
-            fee = [{"txn_fee": fees_df.iloc[idx]}]
-            swaps_data.append(swap + fee)
+            swap.extend([{"txn_fee": infos_df.loc[idx, "transaction_fee"]}])
+
+            swaps_data.append(swap)
 
         return swaps_data
 
