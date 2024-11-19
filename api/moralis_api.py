@@ -133,7 +133,7 @@ class MoralisAPI:
             params=params,
         )["result"]
 
-        swaps = []
+        transactions = []
 
         excluded_categories = [
             "contract interaction",
@@ -148,11 +148,11 @@ class MoralisAPI:
             in_excluded_categories = txn["category"] in excluded_categories
 
             if is_not_spam and not in_excluded_categories:
-                swaps.append(txn)
+                transactions.append(txn)
 
-        self.logger.info("Retrieved %d transactions", len(swaps))
+        self.logger.info("Retrieved %d transactions", len(transactions))
 
-        return swaps
+        return transactions
 
     def get_swaps(self, swaps: list) -> list:
         """
