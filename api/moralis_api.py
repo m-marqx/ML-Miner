@@ -111,7 +111,11 @@ class MoralisAPI:
 
         raise ValueError("data has less than 2 elements")
 
-    def get_transactions(self, wallet: str) -> list:
+    def get_transactions(
+        self,
+        wallet: str,
+        excluded_categories: list | None = None
+    ) -> list:
         """
         Retrieves all swaps for a given wallet address.
 
@@ -135,13 +139,14 @@ class MoralisAPI:
 
         transactions = []
 
-        excluded_categories = [
-            "contract interaction",
-            "token receive",
-            "airdrop",
-            "receive",
-            "approve",
-        ]
+        if excluded_categories is None:
+            excluded_categories = [
+                "contract interaction",
+                "token receive",
+                "airdrop",
+                "receive",
+                "approve",
+            ]
 
         for txn in txn_infos:
             is_not_spam = not txn["possible_spam"]
