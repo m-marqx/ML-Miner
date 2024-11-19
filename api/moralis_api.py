@@ -159,7 +159,7 @@ class MoralisAPI:
 
         return transactions
 
-    def get_swaps(self, swaps: list) -> list:
+    def get_swaps(self, swaps: list, add_summary: bool = False) -> list:
         """
         Retrieves all swaps data for a given wallet address.
 
@@ -178,6 +178,7 @@ class MoralisAPI:
 
         infos_df = pd.DataFrame(swaps)
         infos_df["transaction_fee"] = infos_df["transaction_fee"].astype(float)
+        infos_df["summary"] = infos_df["summary"]
 
         for idx, x in enumerate(swaps):
             try:
@@ -198,6 +199,9 @@ class MoralisAPI:
                 swap = self.process_transaction_data(x)
 
             swap.extend([{"txn_fee": infos_df.loc[idx, "transaction_fee"]}])
+
+            if add_summary:
+                swap.extend([{"summary": infos_df.loc[idx, "summary"]}])
 
             swaps_data.append(swap)
 
