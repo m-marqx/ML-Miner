@@ -207,7 +207,7 @@ class MoralisAPI:
 
         return swaps_data
 
-    def get_account_swaps(self, wallet: str) -> pd.DataFrame:
+    def get_account_swaps(self, wallet: str, add_summary: bool = False) -> pd.DataFrame:
         """
         Retrieves all swaps for a given wallet address.
 
@@ -223,7 +223,7 @@ class MoralisAPI:
             wallet address.
         """
         swaps_list = self.get_transactions(wallet)
-        swaps_data = self.get_swaps(swaps_list)
+        swaps_data = self.get_swaps(swaps_list, add_summary)
 
         swap_columns = ["token_symbol", "value_formatted"]
         from_df = pd.DataFrame(pd.DataFrame(swaps_data)[0].tolist())[
@@ -254,7 +254,14 @@ class MoralisAPI:
             "txn_fee",
         ]
 
-        swaps_df = pd.concat([from_df, to_df, fee_df], axis=1)
+        data_dfs = [from_df, to_df, fee_df]
+
+        if add_summary:
+            columns_name.append("summary")
+            summary_df = pd.DataFrame(pd.DataFrame(swaps_data)[3].tolist())
+            data_dfs.append(summary_df)
+
+        swaps_df = pd.concat(data_dfs, axis=1)
 
         swaps_df[["from", "to"]] = swaps_df[["from", "to"]].astype(float)
 
