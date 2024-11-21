@@ -207,7 +207,7 @@ class MoralisAPI:
 
         return swaps_data
 
-    def get_account_swaps(self, wallet: str, add_summary: bool = False) -> pd.DataFrame:
+    def get_account_swaps(self, wallet: str, coin_name: bool = False, add_summary: bool = False) -> pd.DataFrame:
         """
         Retrieves all swaps for a given wallet address.
 
@@ -215,6 +215,9 @@ class MoralisAPI:
         ----------
         wallet : str
             The wallet address to retrieve swaps for.
+        coin_name : bool
+            Whether to include the names of the coins being swapped.
+
 
         Returns
         -------
@@ -272,4 +275,9 @@ class MoralisAPI:
         )
 
         swaps_df = swaps_df[columns_name]
+
+        if not coin_name:
+            coin_name_columns = ["from_coin_name", "to_coin_name"]
+            swaps_df = swaps_df.drop(columns=coin_name_columns)
+
         return swaps_df
