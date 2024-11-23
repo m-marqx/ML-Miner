@@ -75,6 +75,29 @@ class APIHandler(ABC):
         return handler
 
     def handle(self, wallet: str, coin_name: bool = False):
+        """
+        Process the API request with fallback support.
+
+        Attempts to get account swaps using the current handler.
+        If it fails, delegates to the next handler in the chain.
+
+        Parameters
+        ----------
+        wallet : str
+            The wallet address to query.
+        coin_name : bool, optional
+            Flag to include coin names in the response (default=False).
+
+        Returns
+        -------
+        dict
+            The API response data.
+
+        Raises
+        ------
+        Exception
+            If all handlers in the chain fail.
+        """
         try:
             return self.get_account_swaps(wallet, coin_name)
         except Exception as e:
