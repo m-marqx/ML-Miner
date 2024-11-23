@@ -109,4 +109,24 @@ class APIHandler(ABC):
 
     @abstractmethod
     def get_account_swaps(self, wallet: str, coin_name: bool = False):
-        ...
+        """
+        Abstract method to retrieve account swap information.
+        Must be implemented by concrete handler classes.
+
+        Parameters
+        ----------
+        wallet : str
+            The wallet address to query swaps for.
+        coin_name : bool, optional
+            Flag to include coin names in the response (default=False).
+
+        Returns
+        -------
+        dict
+            The swap transaction data for the wallet.
+
+        Raises
+        ------
+        NotImplementedError
+            If the concrete class does not implement this method.
+        """
