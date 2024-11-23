@@ -1,13 +1,41 @@
 import logging
+from abc import ABC, abstractmethod
+
 import pandas as pd
 
 from api.moralis_api import MoralisAPI
 from api.blockscout_api import BlockscoutAPI
 
-from abc import ABC, abstractmethod
 
 
 class APIHandler(ABC):
+    """
+    Abstract base class implementing the Chain of Responsibility pattern
+    for API handlers. This class provides a framework for chaining
+    multiple API handlers together, allowing fallback to alternative
+    APIs if the primary API fails.
+
+    Attributes
+    ----------
+    _next_handler : APIHandler | None
+        The next handler in the chain.
+    verbose : bool
+        Flag to control logging verbosity.
+    api_key : str
+        API key for authentication.
+    logger : logging.Logger
+        Logger instance for handling log messages.
+
+    Methods
+    -------
+    set_next_api(handler: MoralisAPI | BlockscoutAPI)
+    -> MoralisAPI | BlockscoutAPI
+        Sets the next handler in the chain.
+    handle(wallet: str, coin_name: bool = False)
+        Processes the request and delegates to next handler on failure.
+    get_account_swaps(wallet: str, coin_name: bool = False)
+        Abstract method to be implemented by concrete handlers.
+    """
     def __init__(self):
         self._next_handler = None
         self.verbose = False
@@ -30,6 +58,19 @@ class APIHandler(ABC):
         self,
         handler: MoralisAPI | BlockscoutAPI,
     ) -> MoralisAPI | BlockscoutAPI:
+        """
+        Set the next handler in the chain of responsibility.
+
+        Parameters
+        ----------
+        handler : MoralisAPI | BlockscoutAPI
+            The next API handler to be called if this one fails.
+
+        Returns
+        -------
+        MoralisAPI | BlockscoutAPI
+            The handler that was set as next in chain.
+        """
         self._next_handler = handler
         return handler
 
