@@ -179,3 +179,23 @@ class MoralisHandler(APIHandler):
             self.logger.setLevel(logging.INFO)
         else:
             self.logger.setLevel(logging.WARNING)
+
+    def get_account_swaps(self, wallet: str, coin_name: bool = False):
+        """
+        Retrieve swap transactions for a wallet using Moralis API.
+
+        Parameters
+        ----------
+        wallet : str
+            The wallet address to query swaps for.
+        coin_name : bool, optional
+            Flag to include coin names in response (default=False).
+
+        Returns
+        -------
+        dict
+            Swap transaction data from Moralis API.
+        """
+        moralis_api = MoralisAPI(self.verbose, self.api_key)
+        self.logger.info("Running Moralis API...")
+        return moralis_api.get_account_swaps(wallet, coin_name)
