@@ -7,7 +7,6 @@ from api.moralis_api import MoralisAPI
 from api.blockscout_api import BlockscoutAPI
 
 
-
 class APIHandler(ABC):
     """
     Abstract base class implementing the Chain of Responsibility pattern
@@ -36,6 +35,7 @@ class APIHandler(ABC):
     get_account_swaps(wallet: str, coin_name: bool = False)
         Abstract method to be implemented by concrete handlers.
     """
+
     def __init__(self):
         self._next_handler = None
         self.verbose = False
@@ -130,3 +130,52 @@ class APIHandler(ABC):
         NotImplementedError
             If the concrete class does not implement this method.
         """
+
+
+class MoralisHandler(APIHandler):
+    """
+    Concrete implementation of APIHandler for the Moralis API service.
+
+    This handler processes requests through the Moralis API and can be
+    chained with other handlers for fallback functionality.
+
+    Parameters
+    ----------
+    api_key : str
+        The API key for Moralis authentication.
+    verbose : bool, optional
+        Whether to enable verbose logging (default=True).
+
+    Attributes
+    ----------
+    api_key : str
+        Stored API key for Moralis authentication.
+    verbose : bool
+        Flag controlling log verbosity.
+
+    Methods
+    -------
+    get_account_swaps(wallet: str, coin_name: bool = False) -> dict
+        Retrieves swap transactions for a given wallet address using
+        Moralis API.
+    """
+
+    def __init__(self, api_key: str, verbose: bool = True):
+        """
+        Initialize the Moralis API handler.
+
+        Parameters
+        ----------
+        api_key : str
+            The API key for Moralis authentication.
+        verbose : bool, optional
+            Whether to enable verbose logging (default=True).
+        """
+        super().__init__()
+        self.api_key = api_key
+        self.verbose = verbose
+
+        if self.verbose:
+            self.logger.setLevel(logging.INFO)
+        else:
+            self.logger.setLevel(logging.WARNING)
