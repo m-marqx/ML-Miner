@@ -247,3 +247,28 @@ class BlockscoutHandler(APIHandler):
         else:
             self.logger.setLevel(logging.WARNING)
 
+    def get_account_swaps(self, wallet: str, coin_name: bool = False):
+        """
+        Retrieve swap transactions for a wallet using Blockscout API.
+
+        Parameters
+        ----------
+        wallet : str
+            The wallet address to query transactions for.
+        coin_name : bool, optional
+            Flag to include coin names in response (default=False).
+
+        Returns
+        -------
+        pd.DataFrame
+            DataFrame containing swap transaction data from Blockscout
+            API.
+        """
+        self.logger.info("Running Blockscout API...")
+
+        blockscout_api = BlockscoutAPI(self.verbose)
+        transactions = blockscout_api.get_account_transactions(
+            wallet, coin_name
+        )
+
+        return pd.DataFrame(transactions)
