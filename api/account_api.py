@@ -199,3 +199,51 @@ class MoralisHandler(APIHandler):
         moralis_api = MoralisAPI(self.verbose, self.api_key)
         self.logger.info("Running Moralis API...")
         return moralis_api.get_account_swaps(wallet, coin_name)
+
+
+class BlockscoutHandler(APIHandler):
+    """
+    Concrete implementation of APIHandler for the Blockscout API
+    service.
+
+    This handler processes blockchain data requests through the
+    Blockscout API and can be chained with other handlers for fallback
+    functionality.
+
+    Parameters
+    ----------
+    verbose : bool, optional
+        Whether to enable verbose logging (default=True).
+
+    Attributes
+    ----------
+    verbose : bool
+        Flag controlling log verbosity level.
+    logger : logging.Logger
+        Logger instance inherited from APIHandler.
+
+    Methods
+    -------
+    get_account_swaps(wallet: str, coin_name: bool = False)
+    -> pd.DataFrame
+        Retrieves swap transactions for a given wallet address using
+        Blockscout API.
+    """
+
+    def __init__(self, verbose: bool = True):
+        """
+        Initialize the Blockscout API handler.
+
+        Parameters
+        ----------
+        verbose : bool, optional
+            Whether to enable verbose logging (default=True).
+        """
+        super().__init__()
+        self.verbose = verbose
+
+        if self.verbose:
+            self.logger.setLevel(logging.INFO)
+        else:
+            self.logger.setLevel(logging.WARNING)
+
