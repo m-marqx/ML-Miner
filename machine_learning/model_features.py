@@ -69,12 +69,26 @@ def feature_binning(
         .reset_index(drop=True)
     )
 
-    return feature.dropna().apply(
-        lambda x: intervals_range[
-            (x >= intervals_range["lowest"])
-            & (x <= intervals_range["highest"])
-        ].index[0]
+    low_intervals = intervals_range[['lowest']].T
+    low_intervals.index = [feature.index[0]]
+    lowest_df = pd.concat([feature, low_intervals], axis=1).ffill()
+    lowest_compare = lowest_df.le(lowest_df[feature.name], axis=0).iloc[:, 1:]
+
+    high_intervals = intervals_range[['highest']].T
+    high_intervals.index = [feature.index[0]]
+    highest_df = pd.concat([feature, high_intervals], axis=1).ffill()
+    highest_compare = highest_df.ge(highest_df[feature.name], axis=0).iloc[:, 1:]
+
+    data = (
+        (lowest_compare & highest_compare)
+        .replace(False, np.inf)
+        .astype("float")
+        .idxmin(axis=1)
+        .astype("int64")
+        .rename(feature.name)
     )
+
+    return pd.Series(data, index=feature.index, name=feature.name)
 
 
 class ModelFeatures:
