@@ -313,3 +313,27 @@ class AccountAPI:
         self.api_key = api_key
         self.verbose = verbose
 
+    def get_wallet_swaps(self, wallet: str, coin_name: bool = False):
+        """
+        Retrieve swap transactions for a wallet address using chained
+        API providers.
+
+        Parameters
+        ----------
+        wallet : str
+            The wallet address to query transactions for.
+        coin_name : bool, optional
+            Flag to include coin names in response (default=False).
+
+        Returns
+        -------
+        pd.DataFrame
+            DataFrame containing swap transaction data. Falls back to
+            Blockscout if Moralis fails.
+        """
+        moralis = MoralisHandler(self.api_key, self.verbose)
+        blockscout = BlockscoutHandler(self.verbose)
+
+        moralis.set_next_api(blockscout)
+
+        return moralis.handle(wallet, coin_name)
