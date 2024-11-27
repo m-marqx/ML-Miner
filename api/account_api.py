@@ -272,3 +272,44 @@ class BlockscoutHandler(APIHandler):
         )
 
         return pd.DataFrame(transactions)
+
+
+class AccountAPI:
+    """
+    A high-level API handler that implements the Chain of Responsibility
+    pattern to fetch wallet swap transactions from multiple blockchain
+    data providers.
+
+    Uses [`MoralisHandler`](api/account_api.py) as primary provider with
+    [`BlockscoutHandler`](api/account_api.py) as fallback.
+
+    Parameters
+    ----------
+    api_key : str
+        The API key for Moralis authentication.
+    verbose : bool, optional
+        Whether to enable verbose logging
+        (default=True).
+
+    Attributes
+    ----------
+    api_key : str
+        Stored API key for Moralis authentication.
+    verbose : bool
+        Flag controlling log verbosity.
+    """
+    def __init__(self, api_key: str, verbose: bool = True):
+        """
+        Initialize the AccountAPI handler.
+
+        Parameters
+        ----------
+        api_key : str
+            The API key for Moralis authentication.
+        verbose : bool, optional
+            Whether to enable verbose logging
+            (default=True).
+        """
+        self.api_key = api_key
+        self.verbose = verbose
+
