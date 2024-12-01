@@ -70,9 +70,13 @@ class QuickNodeAPI:
             self.default_api_key_idx = self.api_keys.index(api_key)
 
             start = time.perf_counter()
-            response = requests.request(
-                "POST", api_key, headers=headers, data=payload, timeout=60
-            )
+            try:
+                response = requests.request(
+                    "POST", api_key, headers=headers, data=payload, timeout=60
+                )
+            except ConnectionError:
+                time.sleep(300)
+                return self.get_block_stats(block_height)
 
             if response.ok:
                 end = time.perf_counter()
