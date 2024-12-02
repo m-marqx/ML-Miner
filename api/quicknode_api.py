@@ -74,8 +74,12 @@ class QuickNodeAPI:
                 response = requests.request(
                     "POST", api_key, headers=headers, data=payload, timeout=60
                 )
-            except ConnectionError:
+            except requests.exceptions.ConnectionError:
                 time.sleep(300)
+                return self.get_block_stats(block_height)
+
+            except requests.exceptions.Timeout:
+                time.sleep(120)
                 return self.get_block_stats(block_height)
 
             if response.ok:
