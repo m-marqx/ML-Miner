@@ -1,6 +1,8 @@
 import json
 import time
 import requests
+from custom_exceptions.api_error import ApiError
+
 
 class QuickNodeAPI:
     """
@@ -90,4 +92,4 @@ class QuickNodeAPI:
                     time.sleep(1 - time_elapsed)
 
                 return response.json()["result"]
-        raise ValueError("No API key worked")
+        raise ApiError(response.json())
