@@ -1,3 +1,4 @@
+import logging
 import json
 import time
 import requests
@@ -36,6 +37,20 @@ class QuickNodeAPI:
         """
         self.api_keys = api_keys
         self.default_api_key_idx = default_api_key_idx
+
+        self.logger = logging.getLogger("moralis_API")
+        formatter = logging.Formatter(
+            "%(levelname)s %(asctime)s: %(message)s", datefmt="%H:%M:%S"
+        )
+
+        handler = logging.StreamHandler()
+        handler.setFormatter(formatter)
+
+        if self.logger.hasHandlers():
+            self.logger.handlers.clear()
+
+        self.logger.addHandler(handler)
+        self.logger.propagate = True
 
     def get_block_stats(self, block_height: int):
         """
@@ -77,11 +92,17 @@ class QuickNodeAPI:
                     "POST", api_key, headers=headers, data=payload, timeout=60
                 )
             except requests.exceptions.ConnectionError:
+                self.logger.critical("Connection error, retrying in 5 minutes")
+
                 time.sleep(300)
+
                 return self.get_block_stats(block_height)
 
             except requests.exceptions.Timeout:
+                self.logger.critical("Connection error, retrying in 2 minutes")
+
                 time.sleep(120)
+
                 return self.get_block_stats(block_height)
 
             if response.ok:
