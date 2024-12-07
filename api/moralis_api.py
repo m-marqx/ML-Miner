@@ -146,6 +146,7 @@ class MoralisAPI:
                 "airdrop",
                 "receive",
                 "approve",
+                "send",
             ]
 
         for txn in txn_infos:
