@@ -82,13 +82,12 @@ def feature_binning(
     data = (
         (lowest_compare & highest_compare)
         .replace(False, np.inf)
-        .astype("float")
+        .astype("float64")
         .idxmin(axis=1)
-        .astype("int64")
         .rename(feature.name)
     )
 
-    return pd.Series(data, index=feature.index, name=feature.name)
+    return pd.Series(data, index=feature.dropna().index, name=feature.name, dtype="float64")
 
 
 class ModelFeatures:

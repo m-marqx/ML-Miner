@@ -68,6 +68,7 @@ class TestFeatureBinning(unittest.TestCase):
                 Timestamp("2012-01-21 00:00:00"): 1,
             },
             name="close",
+            dtype="float64",
         )
 
         expected_df.index.name = "date"
