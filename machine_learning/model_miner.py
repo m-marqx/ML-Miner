@@ -362,8 +362,7 @@ class ModelMiner:
             "random_macd_signal_length": signal_length,
             "random_macd_ma_method": np.random.choice(self.ma_types),
             "random_macd_signal_method": np.random.choice(self.ma_types),
-            "random_macd_column": np.random.choice(["histogram"]),
-            "random_macd_diff_method": np.random.choice(["ratio"]),
+            "random_macd_column": np.random.choice(["macd", "signal", "histogram"]),
             # TRIX
             "random_source_price_trix": np.random.choice(self.ohlc),
             "random_binnings_qty_trix": np.random.choice(range(10, 31)),
@@ -541,6 +540,7 @@ class ModelMiner:
             ):
                 return self.empty_dict
 
+            # Criação do modelo
             y_test = all_y.loc[test_periods[0] : test_periods[1]]
             y_val = all_y.loc[val_periods[0] : val_periods[1]][:-7]
 
