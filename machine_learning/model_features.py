@@ -104,6 +104,12 @@ class ModelFeatures:
     bins : int, optional
         The number of bins to use for binning the features.
         (default: 10)
+    verbose : bool, optional
+        Increase verbosity of the logger.
+        (default: False)
+    normalize : bool, optional
+        Normalize the features before binning.
+        (default: False)
 
     Attributes
     ----------
@@ -115,6 +121,10 @@ class ModelFeatures:
         The number of bins to use for binning the features.
     logger : logging.Logger
         The logger for the ModelFeatures class.
+    verbose : bool
+        Increase verbosity of the logger.
+    normalize : bool
+        Normalize the features before binning.
     """
 
     def __init__(
