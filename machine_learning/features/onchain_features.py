@@ -127,3 +127,15 @@ class OnchainFeatures:
 
         self.logger = create_logger("OnchainFeatures", verbose)
 
+    def set_bins(self, bins: int):
+        """
+        Set the number of bins to use for binning the features.
+
+        Parameters
+        ----------
+        bins : int
+            The number of bins to use for binning the features.
+        """
+        self.bins: int = bins
+        return self
+
