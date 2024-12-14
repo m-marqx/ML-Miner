@@ -213,3 +213,70 @@ class OnchainFeatures:
 
         raise InvalidArgumentError(f"{column} isn't a valid column.")
 
+    def calculate_std_ratio_feature(
+        self,
+        feature: pd.Series,
+        short_window: int,
+        long_window: int,
+    ):
+        """
+        Calculate the ratio between short-term and long-term standard
+        deviations.
+
+        Computes rolling standard deviations over two different window
+        sizes and returns their ratio as a feature for machine learning.
+
+        Parameters
+        ----------
+        feature : pd.Series
+            Series containing the feature to calculate the ratio for
+        short_window : int, optional
+            Size of the shorter rolling window for std calculation
+            (default: 2)
+        long_window : int, optional
+            Size of the longer rolling window for std calculation
+            (default: 4)
+
+        Returns
+        -------
+        pd.DataFrame
+            DataFrame containing the ratio of short-term to long-term
+            standard deviations for each column in onchain_data
+        """
+        if short_window >= long_window:
+            raise InvalidArgumentError(
+                "Short window size must be smaller than long window size."
+            )
+
+        if short_window < 2 or long_window < 2:
+            raise InvalidArgumentError(
+                "Window sizes must be greater than or equal to 2."
+            )
+
+        if short_window == long_window:
+            raise InvalidArgumentError(
+                "Window sizes must be different."
+            )
+
+        if not isinstance(short_window, int) or isinstance(long_window, int):
+            raise InvalidArgumentError(
+                "Window sizes must be integers."
+            )
+
+        if not isinstance(feature, pd.Series):
+            raise InvalidArgumentError(
+                "Feature must be a pandas Series."
+            )
+
+        if not feature:
+            raise InvalidArgumentError(
+                "Feature is invalid or empty."
+            )
+
+        self.logger.info("Creating features for the machine learning model.")
+
+        short_std = feature.rolling(short_window).std()
+        long_std = feature.rolling(long_window).std()
+        std_ratio = short_std / long_std
+        return std_ratio
+
