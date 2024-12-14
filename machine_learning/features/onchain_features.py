@@ -280,3 +280,64 @@ class OnchainFeatures:
         std_ratio = short_std / long_std
         return std_ratio
 
+    def create_std_feature(
+        self,
+        freq: str,
+        column: str = None,
+        short_window: int = 2,
+        long_window: int = 4,
+    ) -> pd.Series:
+        """
+        Create a standard deviation ratio feature for a given column at
+        a specified frequency.
+
+        Parameters
+        ----------
+        freq : str
+            The frequency to resample the data to
+            (e.g., 'D' for daily, 'W' for weekly)
+        column : str, optional
+            The specific column to calculate the standard deviation
+            ratio for
+            (default: None)
+        short_window : int, optional
+            Size of shorter rolling window for std calculation
+            (default: 2)
+        long_window : int, optional
+            Size of longer rolling window for std calculation
+            (default: 4)
+
+        Returns
+        -------
+        pd.Series
+            Series containing the ratio of short-term to long-term
+            standard deviations
+
+        Raises
+        ------
+        InvalidArgumentError
+            If the specified column is not valid or window parameters
+            are invalid
+        """
+        self.logger.info("Calculating standard deviation ratio feature.")
+        start = time.perf_counter()
+        feature = self.create_resampled_feature(column, freq)
+
+        self.dataset[f"{column}_std_ratio"] = self.calculate_std_ratio_feature(
+            feature,
+            short_window,
+            long_window
+        )
+
+        self.dataset[f"{column}_feat"] = feature_binning(
+            self.dataset[f"{column}_feat"],
+            self.test_index,
+            self.bins,
+        )
+
+        self.logger.info(
+            "Standard deviation ratio feature calculated in %.2f seconds.",
+            time.perf_counter() - start,
+        )
+
+        return self
