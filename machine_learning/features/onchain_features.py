@@ -139,3 +139,77 @@ class OnchainFeatures:
         self.bins: int = bins
         return self
 
+    def calculate_resampled_data(self, column: str, freq: str) -> pd.Series:
+        """
+        Calculate a resampled data based on column type and frequency.
+
+        Parameters
+        ----------
+        column : str
+            The column name to resample from onchain_data
+        freq : str
+            Frequency to resample the data
+            (e.g. 'D' for daily, 'W' for weekly)
+
+        Returns
+        -------
+        pd.Series
+            Resampled feature series with specified frequency
+
+        Raises
+        ------
+        InvalidArgumentError
+            If column name is invalid or incompatible
+
+        Notes
+        -----
+        Different resampling methods are used based on column type:
+        - Average: mean() for fees, rates, sizes
+        - Maximum: max() for max fees, rates, sizes
+        - Median: median() for median times and sizes
+        - Minimum: min() for min fees, rates, sizes
+        - Sum: sum() for totals and transaction counts
+        - Count: count() for heights and hashes
+        """
+        avg_infos = ["avgfee", "avgfeerate", "avgtxsize"]
+        feerate_percentiles = ["feerate_percentiles"]
+        max_infos = ["maxfee", "maxfeerate", "maxtxsize"]
+        median_infos = ["medianfee", "mediantime", "mediantxsize"]
+        min_infos = ["minfee", "minfeerate", "mintxsize"]
+        total_infos = ["total_out", "total_size", "total_weight", "totalfee"]
+
+        txs_infos = [
+            "ins",
+            "outs",
+            "txs",
+            "utxo_increase",
+            "utxo_size_inc",
+            "utxo_increase_actual",
+            "utxo_size_inc_actual",
+        ]
+
+        feature = self.onchain_data[column].copy()
+
+        if column in avg_infos:
+            return feature.resample(freq).mean()
+
+        if column in max_infos:
+            return feature.resample(freq).max()
+
+        if column in median_infos:
+            return feature.resample(freq).median()
+
+        if column in min_infos:
+            return feature.resample(freq).min()
+
+        if column in [*total_infos, *txs_infos, "subsidy"]:
+            return feature.resample(freq).sum()
+
+        if column in ["height", "blockhash"]:
+            return feature.resample(freq).count()
+
+        if column in feerate_percentiles:
+            raise InvalidArgumentError(f"{column} isn't compatible")
+
+        raise InvalidArgumentError(f"{column} isn't a valid column.")
+
