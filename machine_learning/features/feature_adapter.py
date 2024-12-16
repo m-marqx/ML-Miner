@@ -80,3 +80,30 @@ class FeaturesAdapter:
         """
         self.class_obj = class_obj
 
+    def run_method(self, method_name: str, *method_args, **method_kwargs):
+        """
+        Execute a method on the underlying feature class instance.
+
+        Parameters
+        ----------
+        method_name : str
+            Name of the method to execute
+        *method_args
+            Variable length argument list to pass to the method
+        **method_kwargs
+            Arbitrary keyword arguments to pass to the method
+
+        Returns
+        -------
+        FeaturesAdapter
+            Returns self for method chaining
+
+        Raises
+        ------
+        AttributeError
+            If the method_name doesn't exist in the underlying class
+        """
+        method = getattr(self.class_obj, method_name)
+        method(*method_args, **method_kwargs)
+        return self
+
