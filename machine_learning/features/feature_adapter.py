@@ -107,3 +107,38 @@ class FeaturesAdapter:
         method(*method_args, **method_kwargs)
         return self
 
+    def get_method_docstring(self, method_name: str) -> str:
+        """
+        Get the docstring for a specified method from the underlying
+        class.
+
+        Parameters
+        ----------
+        method_name : str
+            Name of the method whose docstring should be retrieved
+
+        Returns
+        -------
+        str
+            The docstring of the specified method
+
+        Raises
+        ------
+        AttributeError
+            If the method_name doesn't exist in the underlying class
+        """
+        method = getattr(self.class_obj, method_name)
+        print(method.__doc__)
+        return self
+
+    @property
+    def dataset(self) -> pd.DataFrame:
+        """
+        Access the underlying feature class's dataset.
+
+        Returns
+        -------
+        pd.DataFrame
+            The dataset from the underlying feature class instance
+        """
+        return self.class_obj.dataset
