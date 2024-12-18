@@ -139,13 +139,13 @@ class OnchainFeatures:
         self.bins: int = bins
         return self
 
-    def calculate_resampled_data(self, column: str, freq: str) -> pd.Series:
+    def calculate_resampled_data(self, columns: list, freq: str) -> pd.Series:
         """
         Calculate a resampled data based on column type and frequency.
 
         Parameters
         ----------
-        column : str
+        columns : list
             The column name to resample from onchain_data
         freq : str
             Frequency to resample the data
@@ -175,6 +175,9 @@ class OnchainFeatures:
         feerate_percentiles = ["feerate_percentiles"]
         max_infos = ["maxfee", "maxfeerate", "maxtxsize"]
         median_infos = ["medianfee", "mediantime", "mediantxsize"]
+
+        # The minimum fee and rate values are equals to 0 in 99% of the time
+        # if the frequency <= 1 day
         min_infos = ["minfee", "minfeerate", "mintxsize"]
         total_infos = ["total_out", "total_size", "total_weight", "totalfee"]
 
@@ -188,30 +191,35 @@ class OnchainFeatures:
             "utxo_size_inc_actual",
         ]
 
-        feature = self.onchain_data[column].copy()
+        feature = self.onchain_data[columns].copy()
+        resampled_feature = feature[columns].resample(freq)
 
-        if column in avg_infos:
-            return feature.resample(freq).mean()
+        features = {}
+        for col in columns:
+            if col in avg_infos:
+                features[col] = resampled_feature[col].mean()
 
-        if column in max_infos:
-            return feature.resample(freq).max()
+            elif col in [*total_infos, *txs_infos, "subsidy"]:
+                features[col] = resampled_feature[col].sum()
 
-        if column in median_infos:
-            return feature.resample(freq).median()
+            elif col in ["height", "blockhash"]:
+                features[col] = resampled_feature[col].count()
 
-        if column in min_infos:
-            return feature.resample(freq).min()
+            elif col in max_infos:
+                features[col] = resampled_feature[col].max()
 
-        if column in [*total_infos, *txs_infos, "subsidy"]:
-            return feature.resample(freq).sum()
+            elif col in median_infos:
+                features[col] = resampled_feature[col].median()
 
-        if column in ["height", "blockhash"]:
-            return feature.resample(freq).count()
+            elif col in feerate_percentiles or min_infos:
+                raise InvalidArgumentError(f"{col} isn't compatible")
 
-        if column in feerate_percentiles:
-            raise InvalidArgumentError(f"{column} isn't compatible")
+            else:
+                raise InvalidArgumentError(f"{col} isn't a valid column.")
 
-        raise InvalidArgumentError(f"{column} isn't a valid column.")
+        features_df = pd.concat(features, axis=1)
+        features_df.columns = [f"{key}_std_ratio" for key in features]
+        return features_df
 
     def calculate_std_ratio_feature(
         self,
