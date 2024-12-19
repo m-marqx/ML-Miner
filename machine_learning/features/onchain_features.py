@@ -223,7 +223,7 @@ class OnchainFeatures:
 
     def calculate_std_ratio_feature(
         self,
-        feature: pd.Series,
+        feature: pd.Series | pd.DataFrame,
         short_window: int,
         long_window: int,
     ):
@@ -266,19 +266,19 @@ class OnchainFeatures:
                 "Window sizes must be different."
             )
 
-        if not isinstance(short_window, int) or isinstance(long_window, int):
+        if not isinstance(short_window, int) or not isinstance(long_window, int):
             raise InvalidArgumentError(
                 "Window sizes must be integers."
             )
 
-        if not isinstance(feature, pd.Series):
+        if not isinstance(feature, pd.Series) and not isinstance(feature, pd.DataFrame):
             raise InvalidArgumentError(
-                "Feature must be a pandas Series."
+                "Feature must be a pandas Series or pandas DataFrame."
             )
 
-        if not feature:
+        if feature.empty:
             raise InvalidArgumentError(
-                "Feature is invalid or empty."
+                "Feature can't be an empty DataFrame."
             )
 
         self.logger.info("Creating features for the machine learning model.")
