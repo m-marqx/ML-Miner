@@ -290,8 +290,8 @@ class OnchainFeatures:
 
     def create_std_feature(
         self,
+        column: str | list,
         freq: str,
-        column: str = None,
         short_window: int = 2,
         long_window: int = 4,
     ) -> pd.Series:
