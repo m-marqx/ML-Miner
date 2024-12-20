@@ -288,7 +288,7 @@ class OnchainFeatures:
         std_ratio = short_std / long_std
         return std_ratio
 
-    def create_std_feature(
+    def create_std_ratio_feature(
         self,
         column: str | list,
         freq: str,
