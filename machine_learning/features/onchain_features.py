@@ -251,7 +251,7 @@ class OnchainFeatures:
             DataFrame containing the ratio of short-term to long-term
             standard deviations for each column in onchain_data
         """
-        if short_window >= long_window:
+        if short_window > long_window:
             raise InvalidArgumentError(
                 "Short window size must be smaller than long window size."
             )
@@ -278,7 +278,7 @@ class OnchainFeatures:
 
         if feature.empty:
             raise InvalidArgumentError(
-                "Feature can't be an empty DataFrame."
+                "Feature can't be empty"
             )
 
         self.logger.info("Creating features for the machine learning model.")
