@@ -329,7 +329,7 @@ class OnchainFeatures:
         """
         self.logger.info("Calculating standard deviation ratio feature.")
         start = time.perf_counter()
-        feature = self.create_resampled_feature(column, freq)
+        feature = self.calculate_resampled_data(column, freq)
 
         self.dataset[f"{column}_std_ratio"] = self.calculate_std_ratio_feature(
             feature,
