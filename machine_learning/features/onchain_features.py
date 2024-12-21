@@ -16,7 +16,7 @@ OnchainFeatures
 Example
 -------
 >>> features = OnchainFeatures()
->>> features.create_std_feature('D', 'txs', 2, 4)
+>>> features.create_std_ratio_feature('D', 'txs', 2, 4)
 """
 
 import pathlib
@@ -57,7 +57,7 @@ class OnchainFeatures:
         Creates resampled features based on column type and specified
         frequency (e.g., daily, weekly, etc.).
 
-    create_std_feature(freq, column, short_window, long_window)
+    create_std_ratio_feature(freq, column, short_window, long_window)
         Creates standard deviation ratio features by resampling data at
         specified frequency and calculating ratios between short and
         long term standard deviations
@@ -69,7 +69,7 @@ class OnchainFeatures:
     Example
     -------
     >>> features = OnchainFeatures()
-    >>> std_ratio = features.create_std_feature('D', 'txs', 2, 4)
+    >>> std_ratio = features.create_std_ratio_feature('D', 'txs', 2, 4)
     """
 
     def __init__(
@@ -121,7 +121,7 @@ class OnchainFeatures:
             self.onchain_data["time"], unit="s"
         )
         self.onchain_data = self.onchain_data.set_index("time")
-        self.dataset = self.onchain_data.copy()
+        self.dataset = pd.DataFrame()
         self.test_index = test_index
         self.bins = bins
 
@@ -331,17 +331,21 @@ class OnchainFeatures:
         start = time.perf_counter()
         feature = self.calculate_resampled_data(column, freq)
 
-        self.dataset[f"{column}_std_ratio"] = self.calculate_std_ratio_feature(
+        self.dataset = self.calculate_std_ratio_feature(
             feature,
             short_window,
             long_window
         )
 
-        self.dataset[f"{column}_feat"] = feature_binning(
-            self.dataset[f"{column}_feat"],
-            self.test_index,
-            self.bins,
-        )
+        indexes_after_2011 = self.dataset.index >= pd.Timestamp("2011-01-01")
+        self.dataset = self.dataset[indexes_after_2011]
+
+        for col in self.dataset.columns:
+            self.dataset[f"{col}_feat"] = feature_binning(
+                self.dataset[col],
+                self.test_index,
+                self.bins,
+            )
 
         self.logger.info(
             "Standard deviation ratio feature calculated in %.2f seconds.",
