@@ -301,13 +301,13 @@ class OnchainFeatures:
 
         Parameters
         ----------
-        freq : str
-            The frequency to resample the data to
-            (e.g., 'D' for daily, 'W' for weekly)
         column : str, optional
             The specific column to calculate the standard deviation
             ratio for
             (default: None)
+        freq : str
+            The frequency to resample the data to
+            (e.g., 'D' for daily, 'W' for weekly)
         short_window : int, optional
             Size of shorter rolling window for std calculation
             (default: 2)
