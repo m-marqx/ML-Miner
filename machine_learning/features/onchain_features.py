@@ -71,7 +71,6 @@ class OnchainFeatures:
     >>> features = OnchainFeatures()
     >>> std_ratio = features.create_std_ratio_feature('D', 'txs', 2, 4)
     """
-
     def __init__(
         self,
         onchain_data: pd.DataFrame | None = None,
@@ -171,15 +170,17 @@ class OnchainFeatures:
         - Sum: sum() for totals and transaction counts
         - Count: count() for heights and hashes
         """
+        total_infos = ["total_out", "total_size", "total_weight", "totalfee"]
         avg_infos = ["avgfee", "avgfeerate", "avgtxsize"]
         feerate_percentiles = ["feerate_percentiles"]
         max_infos = ["maxfee", "maxfeerate", "maxtxsize"]
+
+        # Median fee and median txsize have a poorly distribution of values
         median_infos = ["medianfee", "mediantime", "mediantxsize"]
 
         # The minimum fee and rate values are equals to 0 in 99% of the time
         # if the frequency <= 1 day
         min_infos = ["minfee", "minfeerate", "mintxsize"]
-        total_infos = ["total_out", "total_size", "total_weight", "totalfee"]
 
         txs_infos = [
             "ins",
