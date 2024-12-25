@@ -142,3 +142,21 @@ class FeaturesAdapter:
             The dataset from the underlying feature class instance
         """
         return self.class_obj.dataset
+
+    @property
+    def base_dataset(self) -> pd.DataFrame:
+        """
+        Access the underlying feature class's base dataset.
+
+        Returns
+        -------
+        pd.DataFrame
+            The base dataset from the underlying feature class instance
+        """
+        if any(self.class_obj.onchain_data):
+            return self.class_obj.onchain_data
+
+        if any(self.class_obj.original_dataset):
+            return self.class_obj.original_dataset
+
+        raise AttributeError("No base dataset found in the feature class")
