@@ -112,7 +112,7 @@ class OnchainFeatures:
                 "data",
                 "onchain",
                 "BTC",
-                "block_stats.parquet",
+                "block_stats_fragments",
             )
             self.onchain_data = pd.read_parquet(path)
 
