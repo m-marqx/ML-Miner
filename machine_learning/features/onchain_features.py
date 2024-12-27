@@ -107,7 +107,9 @@ class OnchainFeatures:
 
         The 'time' column is converted to datetime and set as index.
         """
-        if not onchain_data:
+        if any(onchain_data):
+            self.onchain_data = onchain_data
+        else:
             path = pathlib.Path(
                 "data",
                 "onchain",
@@ -116,10 +118,11 @@ class OnchainFeatures:
             )
             self.onchain_data = pd.read_parquet(path)
 
-        self.onchain_data["time"] = pd.to_datetime(
-            self.onchain_data["time"], unit="s"
-        )
-        self.onchain_data = self.onchain_data.set_index("time")
+            self.onchain_data["time"] = pd.to_datetime(
+                self.onchain_data["time"], unit="s"
+            )
+            self.onchain_data = self.onchain_data.set_index("time")
+
         self.dataset = pd.DataFrame()
         self.test_index = test_index
         self.bins = bins
