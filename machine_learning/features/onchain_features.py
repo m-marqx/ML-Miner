@@ -176,6 +176,10 @@ class OnchainFeatures:
         total_infos = ["total_out", "total_size", "total_weight", "totalfee"]
         avg_infos = ["avgfee", "avgfeerate", "avgtxsize"]
         feerate_percentiles = ["feerate_percentiles"]
+
+        # The maxfee has found many values that are exactly the same
+        # generating NaN values in the feature create that's why
+        # it's not a good feature to use
         max_infos = ["maxfee", "maxfeerate", "maxtxsize"]
 
         # Median fee and median txsize have a poorly distribution of values
@@ -195,6 +199,12 @@ class OnchainFeatures:
             "utxo_size_inc_actual",
         ]
 
+        invalid_columns = [
+            *feerate_percentiles,
+            *min_infos,
+            *max_infos,
+        ]
+
         feature = self.onchain_data[columns].copy()
         resampled_feature = feature[columns].resample(freq)
 
@@ -209,13 +219,10 @@ class OnchainFeatures:
             elif col in ["height", "blockhash"]:
                 features[col] = resampled_feature[col].count()
 
-            elif col in max_infos:
-                features[col] = resampled_feature[col].max()
-
             elif col in median_infos:
                 features[col] = resampled_feature[col].median()
 
-            elif col in feerate_percentiles or min_infos:
+            elif col in invalid_columns:
                 raise InvalidArgumentError(f"{col} isn't compatible")
 
             else:
