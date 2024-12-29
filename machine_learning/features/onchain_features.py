@@ -351,6 +351,23 @@ class OnchainFeatures:
         indexes_after_2011 = self.dataset.index >= pd.Timestamp("2011-01-01")
         self.dataset = self.dataset[indexes_after_2011]
 
+        if self.dataset.isna().any().any():
+            na_indexes = self.dataset[self.dataset.isna().any(axis=1)].index
+
+            kwargs_used = {
+                "column": column,
+                "freq": freq,
+                "short_window": short_window,
+                "long_window": long_window,
+            }
+
+            raise ValueError(
+                "There are NaN values in the dataset"
+                + f" in the following indexes: {na_indexes}"
+                + " Please check the data."
+                + f" kwargs used: {kwargs_used}"
+            )
+
         for col in self.dataset.columns:
             self.dataset[f"{col}_feat"] = feature_binning(
                 self.dataset[col],
