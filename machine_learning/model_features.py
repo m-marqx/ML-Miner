@@ -135,6 +135,7 @@ class ModelFeatures:
         verbose: bool = False,
         normalize: bool = False,
     ):
+        self.original_dataset = dataset.copy()
         self.dataset = dataset.copy()
         self.test_index = test_index
         self.bins = bins
