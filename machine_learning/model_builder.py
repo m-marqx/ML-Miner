@@ -603,17 +603,20 @@ def model_creation(
     if "BBTrend_opt" in feat_parameters["random_features"]:
         bb_source = data_frame[feat_parameters["random_source_bb_trend"]]
 
-        model_features.set_bins(
-            feat_parameters["random_binnings_qty_bb_trend"],
-        ).set_normalize(True).create_bb_trend_feature(
-            bb_source,
-            feat_parameters["random_bb_trend_short_length"],
-            feat_parameters["random_bb_trend_long_length"],
-            feat_parameters["random_bb_trend_stdev"],
-            feat_parameters["random_bb_trend_ma_method"],
-            feat_parameters["random_bb_trend_stdev_method"],
-            feat_parameters["random_bb_trend_diff_method"],
-            feat_parameters["random_bb_trend_based_on"],
+        (
+            model_features
+            .set_bins(feat_parameters["random_binnings_qty_bb_trend"])
+            .set_normalize(True)
+            .create_bb_trend_feature(
+                bb_source,
+                feat_parameters["random_bb_trend_short_length"],
+                feat_parameters["random_bb_trend_long_length"],
+                feat_parameters["random_bb_trend_stdev"],
+                feat_parameters["random_bb_trend_ma_method"],
+                feat_parameters["random_bb_trend_stdev_method"],
+                feat_parameters["random_bb_trend_diff_method"],
+                feat_parameters["random_bb_trend_based_on"],
+            )
         )
 
     data_frame = model_features.dataset.copy()
@@ -634,7 +637,11 @@ def model_creation(
         **hyperparams,
     )
 
-    mh2["Liquid_Result"] = np.where(mh2["Predict"] != side, 0, mh2["Liquid_Result"])
+    mh2["Liquid_Result"] = np.where(
+        mh2["Predict"] != side,
+        0,
+        mh2["Liquid_Result"],
+    )
 
     return (
         adjust_max_trades(mh2, off_days, max_trades, pct_adj, side),
