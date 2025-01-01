@@ -722,7 +722,6 @@ class ModelMiner:
         except Exception as e:
             raise ValueError(f"Error: {e} \n {feat_parameters} \n\n  {hyperparams}") from e
 
-
     def search_model(
         self,
         test_index: int,
