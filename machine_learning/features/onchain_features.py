@@ -107,7 +107,24 @@ class OnchainFeatures:
 
         The 'time' column is converted to datetime and set as index.
         """
-        if any(onchain_data):
+        if not isinstance(onchain_data, pd.DataFrame) and onchain_data is not None:
+            raise InvalidArgumentError(
+                "onchain_data must be a pandas DataFrame or None."
+            )
+        if not isinstance(test_index, int) and test_index is not None:
+            raise InvalidArgumentError(
+                "test_index must be an integer or None."
+            )
+        if not isinstance(bins, int):
+            raise InvalidArgumentError(
+                "bins must be an integer."
+            )
+        if not isinstance(verbose, bool):
+            raise InvalidArgumentError(
+                "verbose must be a boolean."
+            )
+
+        if isinstance(onchain_data, pd.DataFrame):
             self.onchain_data = onchain_data
         else:
             path = pathlib.Path(
