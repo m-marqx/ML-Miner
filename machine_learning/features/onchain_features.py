@@ -246,7 +246,7 @@ class OnchainFeatures:
                 raise InvalidArgumentError(f"{col} isn't a valid column.")
 
         features_df = pd.concat(features, axis=1)
-        features_df.columns = [f"{key}_std_ratio" for key in features]
+        features_df.columns = [f"{key}_resampled" for key in features]
         return features_df
 
     def calculate_std_ratio_feature(
