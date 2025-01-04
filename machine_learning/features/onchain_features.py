@@ -370,6 +370,11 @@ class OnchainFeatures:
 
         if self.dataset.isna().any().any():
             na_indexes = self.dataset[self.dataset.isna().any(axis=1)].index
+            columns = (
+                self.dataset.isna()
+                .sum()[self.dataset.isna().sum() > 0]
+                .index.tolist()
+            )
 
             kwargs_used = {
                 "column": column,
@@ -379,10 +384,10 @@ class OnchainFeatures:
             }
 
             raise ValueError(
-                "There are NaN values in the dataset"
-                + f" in the following indexes: {na_indexes}"
-                + " Please check the data."
-                + f" kwargs used: {kwargs_used}"
+                "Please check the data, there are NaN values in the dataset."
+                + f"\nkwargs used: {kwargs_used}"
+                + f"\nThe following columns has NaN Values: {columns}"
+                + f"\nThe following indexes has NaN Values: {na_indexes}"
             )
 
         for col in self.dataset.columns:
