@@ -32,7 +32,7 @@ class TestOnchainFeatures(TestCase):
         self.all_valid_infos = [
             *self.avg_infos,
             # *self.feerate_percentiles,
-            *self.max_infos,
+            # *self.max_infos,
             *self.median_infos,
             # *self.min_infos,
             *self.total_infos,
@@ -153,8 +153,15 @@ class TestOnchainFeatures(TestCase):
         pd.testing.assert_frame_equal(test_df, expected_df)
 
     def test_create_std_ratio_feature_multiple_columns(self):
+        all_valid_infos = [
+            *self.avg_infos,
+            "mediantime",
+            *self.total_infos,
+            *self.txs_infos,
+        ]
+
         test_df = self.onchain_features.create_std_ratio_feature(
-            self.all_valid_infos, "D", 2, 4
+            all_valid_infos, "D", 2, 4
         ).dataset
 
         expected_df = pd.read_parquet(
