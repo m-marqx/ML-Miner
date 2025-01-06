@@ -76,3 +76,20 @@ class ModelMetrics:
         self.results_test = results_test
         return self
 
+    def set_results_val(self, results_val: pd.DataFrame):
+        """
+        Set the validation results DataFrame.
+
+        Parameters
+        ----------
+        results_val : pd.DataFrame
+            Updated validation results DataFrame.
+
+        Returns
+        -------
+        ModelMetrics
+            The current instance with updated validation results.
+        """
+        self.results_val = results_val
+        return self
+
