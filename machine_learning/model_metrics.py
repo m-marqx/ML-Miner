@@ -93,3 +93,20 @@ class ModelMetrics:
         self.results_val = results_val
         return self
 
+    def set_results(self, results: pd.DataFrame):
+        """
+        Set the full results DataFrame.
+
+        Parameters
+        ----------
+        results : pd.DataFrame
+            Updated full results DataFrame.
+
+        Returns
+        -------
+        ModelMetrics
+            The current instance with updated full results.
+        """
+        self.results = results
+        return self
+
