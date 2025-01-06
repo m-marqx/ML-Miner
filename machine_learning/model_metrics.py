@@ -59,3 +59,20 @@ class ModelMetrics:
             self.val_periods[0] : self.val_periods[1]
         ]
 
+    def set_results_test(self, results_test: pd.DataFrame):
+        """
+        Set the test results DataFrame.
+
+        Parameters
+        ----------
+        results_test : pd.DataFrame
+            Updated test results DataFrame.
+
+        Returns
+        -------
+        ModelMetrics
+            The current instance with updated test results.
+        """
+        self.results_test = results_test
+        return self
+
