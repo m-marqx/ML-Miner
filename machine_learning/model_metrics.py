@@ -110,3 +110,44 @@ class ModelMetrics:
         self.results = results
         return self
 
+    def get_periods(self, index_splits: dict[str, pd.Interval]) -> tuple[
+        tuple[pd.Timestamp, pd.Timestamp],
+        tuple[pd.Timestamp, pd.Timestamp]
+    ]:
+        """
+        Extract test and validation periods from the provided index
+        splits.
+
+        Parameters
+        ----------
+        index_splits : dict[str, pd.Interval]
+            Dictionary of time intervals for train/test/validation.
+
+        Returns
+        -------
+        tuple
+            A tuple of tuples containing the test and validation
+            periods.
+        """
+        if not isinstance(index_splits, dict):
+            raise InvalidArgumentError(
+                "index_splits must be a pd.IntervalIndex"
+            )
+        if self.train_in_middle:
+            test_periods = (
+                index_splits["train"].left,
+                index_splits["train"].right,
+            )
+        else:
+            test_periods = (
+                index_splits["test"].left,
+                index_splits["test"].right,
+            )
+
+        val_periods = (
+            index_splits["validation"].left,
+            index_splits["validation"].right,
+        )
+
+        return test_periods, val_periods
+
