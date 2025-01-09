@@ -151,3 +151,18 @@ class ModelMetrics:
 
         return test_periods, val_periods
 
+    def calculate_model_recommendations(self) -> tuple[pd.Series, pd.Series]:
+        """
+        Count the model recommendations (Predict values) in test and
+        validation sets.
+
+        Returns
+        -------
+        tuple
+            A tuple containing two Series objects for test and
+            validation buys.
+        """
+        test_buys = self.results_test["Predict"].value_counts()
+        val_buys = self.results_val["Predict"].value_counts()
+        return test_buys, val_buys
+
