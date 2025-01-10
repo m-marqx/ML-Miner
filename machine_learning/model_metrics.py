@@ -166,3 +166,80 @@ class ModelMetrics:
         val_buys = self.results_val["Predict"].value_counts()
         return test_buys, val_buys
 
+    def calculate_result_metrics(
+        self,
+        target_series: pd.Series,
+        target_shift: int,
+    ) -> dict[str, float | tuple[float, float]]:
+        """
+        Compute various performance metrics like precision and expected
+        return.
+
+        Parameters
+        ----------
+        target_series : pd.Series
+            The target series for evaluation.
+        target_shift : int
+            Shift to apply on the validation set.
+
+        Returns
+        -------
+        dict
+            Dictionary containing precision and expected return metrics.
+        """
+        y_test = target_series.loc[self.test_periods[0] : self.test_periods[1]]
+        y_val = target_series.loc[self.val_periods[0] : self.val_periods[1]][
+            :-target_shift
+        ]
+
+        y_pred_test = (
+            self.results[["Predict"]]
+            .loc[self.test_periods[0] : self.test_periods[1]]
+            .query("Predict != 0")
+            .where(self.results["Predict"] == 1, 0)
+        )
+
+        y_pred_val = (
+            self.results[["Predict"]]
+            .loc[self.val_periods[0] : self.val_periods[1]][:-target_shift]
+            .query("Predict != 0")
+            .where(self.results["Predict"] == 1, 0)
+        )
+
+        y_test_adj = y_test.reindex(y_pred_test.index)
+        y_val_adj = y_val.reindex(y_pred_val.index)
+
+        result_metrics_test = DataHandler(
+            self.results.reindex(y_test_adj.index)
+        ).result_metrics(
+            "Liquid_Result",
+            is_percentage_data=True,
+            output_format="Series",
+        )
+
+        result_metrics_val = DataHandler(
+            self.results.reindex(y_val_adj.index)
+        ).result_metrics(
+            "Liquid_Result",
+            is_percentage_data=True,
+            output_format="Series",
+        )
+
+        precisions = (
+            result_metrics_test["Win_Rate"],
+            result_metrics_val["Win_Rate"],
+        )
+
+        expected_return = (
+            result_metrics_test["Expected_Return"],
+            result_metrics_val["Expected_Return"],
+        )
+
+        return {
+            "expected_return_test": expected_return[0],
+            "expected_return_val": expected_return[1],
+            "precisions_test": precisions[0],
+            "precisions_val": precisions[1],
+            "precisions": precisions,
+        }
+
