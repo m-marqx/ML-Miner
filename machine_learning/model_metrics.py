@@ -243,3 +243,47 @@ class ModelMetrics:
             "precisions": precisions,
         }
 
+    def calculate_drawdowns(self) -> tuple[float, float, float, float]:
+        """
+        Calculate drawdowns for both raw and adjusted liquid returns.
+
+        Returns
+        -------
+        tuple
+            Tuple of drawdowns at the 0.95 quantile for test and
+            validation sets.
+        """
+        liquid_return_test = self.results_test["Liquid_Result"].cumprod()
+        liquid_return_val = self.results_val["Liquid_Result"].cumprod()
+
+        liquid_return_adj_test = self.results_test[
+            "Liquid_Result_pct_adj"
+        ].cumprod()
+
+        liquid_return_adj_val = self.results_val[
+            "Liquid_Result_pct_adj"
+        ].cumprod()
+
+        drawdown_full_test = (
+            liquid_return_test.cummax() - liquid_return_test
+        ) / liquid_return_test.cummax()
+
+        drawdown_full_val = (
+            liquid_return_val.cummax() - liquid_return_val
+        ) / liquid_return_val.cummax()
+
+        drawdown_adj_test = (
+            liquid_return_adj_test.cummax() - liquid_return_adj_test
+        ) / liquid_return_adj_test.cummax()
+
+        drawdown_adj_val = (
+            liquid_return_adj_val.cummax() - liquid_return_adj_val
+        ) / liquid_return_adj_val.cummax()
+
+        return (
+            drawdown_full_test.quantile(0.95),
+            drawdown_full_val.quantile(0.95),
+            drawdown_adj_test.quantile(0.95),
+            drawdown_adj_val.quantile(0.95),
+        )
+
