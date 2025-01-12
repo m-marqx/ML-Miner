@@ -287,3 +287,47 @@ class ModelMetrics:
             drawdown_adj_val.quantile(0.95),
         )
 
+    def calculate_result_ratios(self) -> dict[str, float]:
+        """
+        Compute performance ratios like Sharpe and Sortino for test and
+        validation sets.
+
+        Returns
+        -------
+        dict
+            Dictionary containing Sharpe and Sortino ratios for test and
+            validation.
+        """
+        _, sharpe_test, sortino_test = (
+            Statistics(
+                dataframe=(
+                    self.results_test["Liquid_Result"] - 1
+                ).drop_duplicates(),
+                time_span="Y",
+                risk_free_rate=(1.12) ** (1 / 365.25) - 1,
+                is_percent=True,
+            )
+            .calculate_all_statistics()
+            .mean()
+        )
+
+        _, sharpe_val, sortino_val = (
+            Statistics(
+                dataframe=(
+                    self.results_val["Liquid_Result"] - 1
+                ).drop_duplicates(),
+                time_span="Y",
+                risk_free_rate=(1.12) ** (1 / 365.25) - 1,
+                is_percent=True,
+            )
+            .calculate_all_statistics()
+            .mean()
+        )
+
+        return {
+            "sharpe_test": sharpe_test,
+            "sharpe_val": sharpe_val,
+            "sortino_test": sortino_test,
+            "sortino_val": sortino_val,
+        }
+
