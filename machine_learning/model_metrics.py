@@ -331,3 +331,42 @@ class ModelMetrics:
             "sortino_val": sortino_val,
         }
 
+    def calculate_result_support(
+        self,
+        adj_targets: pd.Series,
+        side: int,
+    ) -> tuple[float, float]:
+        """
+        Compare predicted support with actual support for a given side
+        label.
+
+        Parameters
+        ----------
+        adj_targets : pd.Series
+            Adjusted target labels.
+        side : int
+            The side (label) to compare.
+
+        Returns
+        -------
+        tuple
+            Tuple of differences in support for test and validation
+            sets.
+        """
+        test_indexes = self.results_test["Predict"].index
+        val_indexes = self.results_val["Predict"].index
+        test_predict_adj = adj_targets.loc[test_indexes]
+        val_predict_adj = adj_targets.loc[val_indexes]
+
+        support_diff_test = (
+            test_predict_adj.value_counts(normalize=True)
+            - self.results_test["Predict"].value_counts(normalize=True)
+        )[side]
+
+        support_diff_val = (
+            val_predict_adj.value_counts(normalize=True)
+            - self.results_val["Predict"].value_counts(normalize=True)
+        )[side]
+
+        return (support_diff_test, support_diff_val)
+
