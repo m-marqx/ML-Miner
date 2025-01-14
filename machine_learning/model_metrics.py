@@ -370,3 +370,70 @@ class ModelMetrics:
 
         return (support_diff_test, support_diff_val)
 
+    def calculate_total_operations(
+        self,
+        test_buys: pd.Series,
+        val_buys: pd.Series,
+        max_trades: int,
+        off_days: int,
+        side: int,
+    ) -> tuple[tuple[int, int], tuple[float, float]]:
+        """
+        Determine total number of operations and their percentage in
+        test/validation sets.
+
+        Parameters
+        ----------
+        test_buys : pd.Series
+            Counts of buy operations in the test set.
+        val_buys : pd.Series
+            Counts of buy operations in the validation set.
+        max_trades : int
+            Maximum number of trades.
+        off_days : int
+            Number of days to skip.
+        side : int
+            The side of the trade to consider.
+
+        Returns
+        -------
+        tuple
+            Tuple containing total operations for test/val and their
+            percentages.
+        """
+        total_operations = (
+            test_buys.loc[side],
+            val_buys.loc[side],
+        )
+
+        max_trade_qty = self.test_index / off_days * max_trades
+
+        total_operations_test_pct: float = total_operations[0] / max_trade_qty
+        total_operations_val_pct: float = total_operations[1] / max_trade_qty
+
+        if total_operations_test_pct > 1 or total_operations_val_pct > 1:
+            warnings.warn(
+                "Total operations percentage is higher than 1"
+                + f" (Test: {total_operations_test_pct:.4%})"
+                + f" | (Val: {total_operations_val_pct:.4%})",
+                RuntimeWarning,
+            )
+
+        elif (
+            total_operations_test_pct >= 0.8
+            or total_operations_val_pct >= 0.8
+        ):
+            warnings.warn(
+                "Total operations percentage is higher than 0.8"
+                + f" (Test: {total_operations_test_pct:.4%})"
+                + f" | (Val: {total_operations_val_pct:.4%})",
+                RuntimeWarning,
+            )
+
+        total_operations_pct: tuple[float, float] = (
+            total_operations_test_pct,
+            total_operations_val_pct,
+        )
+
+        return total_operations, total_operations_pct
+
