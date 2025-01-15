@@ -437,3 +437,43 @@ class ModelMetrics:
 
         return total_operations, total_operations_pct
 
+    def calculate_ols_metrics(self) -> tuple[
+        float | str,
+        float | str,
+        float | str,
+        float | str,
+    ]:
+        """
+        Calculate OLS-based metrics (R-squared and coefficient) for test
+        and validation.
+
+        Returns
+        -------
+        tuple
+            Tuple containing R-squared and coefficient for test and
+            validation sets.
+        """
+        try:
+            results_test_cumulated = self.results_test["Liquid_Result"].cumprod()
+            results_val_cumulated = self.results_val["Liquid_Result"].cumprod()
+
+            test_result_ols = OLSMetrics(results_test_cumulated)
+
+            r2_2022 = test_result_ols.calculate_r2()
+            ols_coef_2022 = test_result_ols.calculate_coef()
+
+            val_result_ols = OLSMetrics(results_val_cumulated)
+
+            r2_val = val_result_ols.calculate_r2()
+            ols_coef_val = val_result_ols.calculate_coef()
+
+        except Exception as e:
+            warnings.warn(f"{type(e).__name__} : {e}", RuntimeWarning)
+
+            r2_2022 = type(e).__name__
+            r2_val = type(e).__name__
+            ols_coef_2022 = type(e).__name__
+            ols_coef_val = type(e).__name__
+
+        return r2_2022, r2_val, ols_coef_2022, ols_coef_val
+
