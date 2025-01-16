@@ -1,4 +1,5 @@
 import warnings
+from typing import Literal
 
 import pandas as pd
 
@@ -477,3 +478,46 @@ class ModelMetrics:
 
         return r2_2022, r2_val, ols_coef_2022, ols_coef_val
 
+    def calculate_accumulated_returns(
+        self,
+        return_type: Literal["all", "linear", "exponential"] = "all",
+    ) -> tuple[float, float, float, float] | tuple[float, float]:
+        """
+        Calculate accumulated returns for test and validation sets.
+
+        Returns
+        -------
+        tuple
+            Tuple containing accumulated returns for test and
+            validation sets.
+        """
+        accumulated_result_test = self.results_test["Liquid_Result"] - 1
+        accumulated_result_val = self.results_val["Liquid_Result"] - 1
+
+        linear_result = accumulated_result_test.cumsum().iloc[-1]
+        linear_result_val = accumulated_result_val.cumsum().iloc[-1]
+
+        exponential_result_test = (
+            self.results_test["Liquid_Result"]
+            .cumprod()
+            .iloc[-1]
+        )
+
+        exponential_result_val = (
+            self.results_val["Liquid_Result"]
+            .cumprod()
+            .iloc[-1]
+        )
+
+        match return_type:
+            case "all":
+                return (
+                    linear_result,
+                    linear_result_val,
+                    exponential_result_test,
+                    exponential_result_val,
+                )
+            case "linear":
+                return linear_result, linear_result_val
+            case "exponential":
+                return exponential_result_test, exponential_result_val
