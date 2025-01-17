@@ -27,7 +27,7 @@ class TestModelCreator(unittest.TestCase):
         np.random.seed(33)
 
         self.hyperparameters = self.model_creator.generate_hyperparameters()
-        self.onchain_features = self.model_creator.create_onchain_features()
+        self.onchain_features = self.model_creator.generate_onchain_features()
 
         self.results, self.index_splits, self.target_series, self.adj_targets = (
             self.model_creator.create_model(
