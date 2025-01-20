@@ -128,7 +128,12 @@ class ModelMiner:
 
         self.random_features = np.array(self.random_features, dtype="object")
 
-        self.adj_targets = adjust_predict_one_side(self.target, max_trades, off_days, side)
+        self.adj_targets = adjust_predict_one_side(
+            self.target,
+            max_trades,
+            off_days,
+            side,
+        )
 
         self.empty_dict: dict[str, None] = {
             "feat_parameters": None,
