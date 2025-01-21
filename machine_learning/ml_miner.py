@@ -172,3 +172,28 @@ class OnchainModelMiner:
 
         return np.array(combinations_list, dtype="object")
 
+    def calculate_onchain_features(self) -> pd.DataFrame:
+        """
+        Calculate the onchain features.
+
+        Returns
+        -------
+        pd.DataFrame
+            The dataframe containing the onchain features.
+        """
+        txs_infos = ["txs", "utxo_increase"]
+        total_infos = ["total_out", "total_size", "total_weight", "totalfee"]
+        avg_infos = ["avgfee", "avgfeerate", "avgtxsize"]
+        median_infos = ["mediantime"]
+
+        all_infos = [
+            *avg_infos,
+            *median_infos,
+            *total_infos,
+            *txs_infos,
+        ]
+
+        self.onchain_features = self.calculate_combinations(all_infos)
+
+        return self
+
