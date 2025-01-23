@@ -250,3 +250,68 @@ class OnchainModelMiner:
             "silent": True,
         }
 
+    def create_onchain_features(self) -> dict:
+        """
+        Create the onchain feature.
+
+        Returns
+        -------
+        dict
+            The dictionary containing the features used.
+        """
+        try:
+            self.calculate_onchain_features()
+
+            onchain_seed = np.random.choice(range(1, 50_001, 1))
+            self.onchain_rng = np.random.default_rng(onchain_seed)
+
+            if len(self.onchain_features) > 1:
+                reduced_onchain_features = self.onchain_rng.choice(
+                    self.onchain_features
+                )
+            else:
+                reduced_onchain_features = reduced_onchain_features[0]
+
+            features_used = {}
+
+            for feature in reduced_onchain_features:
+                length_windows = self.onchain_rng.choice(
+                    range(2,30),
+                    2,
+                    replace=False,
+                )
+
+                short_window = int(length_windows.min())
+                long_window = int(length_windows.max())
+
+                bins = self.onchain_rng.integers(10,31)
+                self.model_creator.set_bins(bins)
+
+                self.model_creator.create_feature(
+                    "create_std_ratio_feature",
+                    list([feature]),
+                    "D",
+                    short_window,
+                    long_window,
+                )
+
+                features_used[feature] = {
+                    "short_window": short_window,
+                    "long_window": long_window,
+                    "bins": bins,
+                }
+
+            features_used["onchain_seed"] = onchain_seed
+
+            return features_used
+        except Exception as e:
+            print(
+                f"""
+                onchain features : {reduced_onchain_features}
+                seed : {onchain_seed}
+                """
+            )
+            raise InvalidArgumentError(
+                f"Error creating onchain features: {e}"
+            ) from e
+
