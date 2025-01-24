@@ -315,3 +315,29 @@ class OnchainModelMiner:
                 f"Error creating onchain features: {e}"
             ) from e
 
+    def create_onchain_catboost_model(self):
+        """
+        Create the CatBoost model.
+
+        Returns
+        -------
+        dict
+            The dictionary containing the hyperparameters and the
+            onchain features used.
+        """
+        hyperparameters = self.generate_hyperparameters()
+        onchain_features = self.create_onchain_features()
+
+        results_df = self.model_creator.create_model(
+            max_trades=self.max_trades,
+            off_days=self.off_days,
+            side=self.side,
+            cutoff_point=5,
+            **hyperparameters,
+        )
+
+        return {
+            "hyperparameters": hyperparameters,
+            "onchain_features": onchain_features,
+            "results_df": results_df,
+        }
