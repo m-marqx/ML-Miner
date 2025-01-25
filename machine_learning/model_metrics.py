@@ -45,7 +45,7 @@ class ModelMetrics:
 
         self.test_periods, self.val_periods = self.get_periods(index_splits)
 
-        self.results = results
+        self.results = results.copy()
 
         if self.train_in_middle:
             self.results_test = results.loc[
