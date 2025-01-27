@@ -190,3 +190,22 @@ class ModelCreator:
             "off_days": None,
         }
 
+    def set_bins(self, bins: int) -> pd.DataFrame:
+        """
+        Set the number of bins for the features.
+
+        Parameters
+        ----------
+        bins : int
+            The number of bins to set for the features.
+
+        Returns
+        -------
+        ModelCreator : ModelCreator
+            The ModelCreator object with the updated number of bins.
+
+        """
+        self.model_features_adapter.run_method("set_bins", bins)
+        self.onchain_features_adapter.run_method("set_bins", bins)
+        return self
+
