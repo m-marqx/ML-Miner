@@ -209,3 +209,34 @@ class ModelCreator:
         self.onchain_features_adapter.run_method("set_bins", bins)
         return self
 
+    def feature_docstring(self, method_name: str) -> str:
+        """
+        Retrieve the docstring for a given feature creation method.
+
+        Parameters
+        ----------
+        method_name : str
+            The name of the feature creation method for which to
+            retrieve the docstring.
+
+        Returns
+        -------
+        str
+            The docstring of the specified feature creation method.
+
+        Raises
+        ------
+        InvalidArgumentError
+            If the specified method name is not found in either
+            model_features_create_methods or
+            onchain_features_create_methods.
+        """
+        if method_name in [*self.model_features_create_methods]:
+            self.model_features_adapter.get_method_docstring(method_name)
+
+        elif method_name in [*self.onchain_features_create_methods]:
+            self.onchain_features_adapter.get_method_docstring(method_name)
+
+        else:
+            raise InvalidArgumentError(f"method {method_name} not found")
+
