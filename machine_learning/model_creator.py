@@ -295,3 +295,71 @@ class ModelCreator:
             self.features_dataset[col] = adapter.dataset[col]
             self.logger.info("Feature %s created", col)
 
+    def create_feature(
+        self,
+        method_name: str,
+        *args,
+        **kwargs,
+    ) -> pd.DataFrame:
+        """Creates a new feature using the specified method.
+        This method creates a new feature by applying the specified
+        calculation method to either model features or onchain
+        features, depending on the method name.
+
+        Parameters
+        ----------
+        method_name : str
+            Name of the method to create the feature. Must exist in
+            either model_features_create_methods or
+            onchain_features_create_methods.
+        *args : tuple
+            Variable length argument list to pass to the calculation
+            method.
+        **kwargs : dict
+            Arbitrary keyword arguments to pass to the calculation
+            method.
+        Returns
+        -------
+        pd.DataFrame
+            The instance of the class with the new feature added to the
+            appropriate features adapter.
+        Raises
+        ------
+        InvalidArgumentError
+            If the specified method_name is not found in either
+            create_methods list.
+
+        Notes
+        -----
+        The method automatically determines whether to apply the
+        calculation to model features or onchain features based on the
+        method_name provided.
+        """
+        model_features_columns = self.model_features_adapter.dataset.columns
+
+        onchain_features_columns = (
+            self.onchain_features_adapter.base_dataset.columns
+        )
+
+        if method_name in [*self.model_features_create_methods]:
+            self.calculate_feature(
+                self.model_features_adapter,
+                method_name,
+                model_features_columns,
+                *args,
+                **kwargs,
+            )
+
+        elif method_name in [*self.onchain_features_create_methods]:
+            self.calculate_feature(
+                self.onchain_features_adapter,
+                method_name,
+                onchain_features_columns,
+                *args,
+                **kwargs,
+            )
+
+        else:
+            raise InvalidArgumentError(f"method {method_name} not found")
+
+        return self
