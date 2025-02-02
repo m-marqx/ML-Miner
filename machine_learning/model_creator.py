@@ -363,3 +363,85 @@ class ModelCreator:
             raise InvalidArgumentError(f"method {method_name} not found")
 
         return self
+
+    def create_model(
+        self,
+        max_trades: int = 3,
+        off_days: int = 7,
+        side: int = 1,
+        cutoff_point: int = 5,
+        **hyperparams,
+    ) -> pd.DataFrame:
+        """
+        Create and adjust a machine learning model based on provided features.
+
+        This method concatenates the original dataset with the computed features,
+        drops rows with missing target values, and builds a model using the
+        calculate_model function. The model's predictions are adjusted and the
+        final result is obtained with a maximum number of trades and other trading
+        parameters adjusted.
+
+        Parameters
+        ----------
+        max_trades : int, optional
+            Maximum number of allowed trades (default is 3).
+        off_days : int, optional
+            Number of off days between trades (default is 7).
+        side : int, optional
+            Trading side parameter for adjustments (default is 1).
+        cutoff_point : int, optional
+            Cutoff point used in the model building process (default is 5).
+        **hyperparams : dict
+            Additional hyperparameters to pass to the calculate_model function.
+
+        Returns
+        -------
+        tuple
+            A tuple containing:
+            - pd.DataFrame: The adjusted model output after applying max trades.
+            - index_splits: The index positions used to split the dataset.
+            - target_series: The target series used for modeling.
+            - adjusted_target: The target adjusted for one side prediction.
+        """
+        df_columns = self.features_dataset.columns.tolist()
+        features = [col for col in df_columns if col.endswith("_feat")]
+
+        dates = self.features_dataset.index[0], self.features_dataset.index[-1]
+
+        data_frame = pd.concat([self.dataset, self.features_dataset], axis=1)
+        data_frame = data_frame[dates[0] : dates[1]].dropna(subset=["Target"])
+
+        adjusted_target = adjust_predict_one_side(
+            self.dataset["Target_bin"],
+            max_trades,
+            off_days,
+            side,
+        )
+
+        mh2, _, _, _, _, _, _, _, _, target_series, index_splits = (
+            calculate_model(
+                dataset=data_frame,
+                feats=features,
+                test_index=self.test_index,
+                plot=False,
+                output="All",
+                long_only=False,
+                train_in_middle=self.train_in_middle,
+                cutoff_point=cutoff_point,
+                dev=False,
+                **hyperparams,
+            )
+        )
+
+        mh2["Liquid_Result"] = np.where(
+            mh2["Predict"] != side,
+            0,
+            mh2["Liquid_Result"],
+        )
+
+        return (
+            adjust_max_trades(mh2, off_days, max_trades, 0.5, side),
+            index_splits,
+            target_series,
+            adjusted_target,
+        )
