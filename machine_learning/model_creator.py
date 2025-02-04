@@ -445,3 +445,28 @@ class ModelCreator:
             target_series,
             adjusted_target,
         )
+
+    def calculate_combinations(self, options_list: list) -> np.array:
+        """
+        Calculate the combinations.
+
+        Parameters
+        ----------
+        options_list : list
+            The list of options to calculate the combinations.
+
+        Returns
+        -------
+        np.array
+            The list of the combinations.
+        """
+        combinations_list = []
+
+        for idx, _ in enumerate(options_list, 1):
+            if idx > 3:
+                break
+            combinations_list += list(
+                itertools.combinations(options_list, idx)
+            )
+
+        return np.array(combinations_list, dtype="object")
