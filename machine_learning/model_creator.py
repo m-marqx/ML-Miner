@@ -497,3 +497,73 @@ class ModelCreator:
         self.onchain_features = self.calculate_combinations(all_infos)
 
         return self
+
+    def generate_hyperparameters(self) -> dict:
+        """
+        Generate a dictionary of hyperparameters for the model.
+
+        Returns
+        -------
+        dict
+            A dictionary containing the following hyperparameters:
+            - iterations : int
+                The number of iterations for the model.
+            - learning_rate : float
+                The learning rate for the model.
+            - depth : int
+                The depth of the model.
+            - min_child_samples : int
+                The minimum number of samples required to create a new
+                node in the model.
+            - colsample_bylevel : float
+                The fraction of columns to be randomly selected for
+                each level in the model.
+            - subsample : float
+                The fraction of samples to be randomly selected for
+                each tree in the model.
+            - reg_lambda : int
+                The regularization lambda value for the model.
+            - use_best_model : bool
+                Whether to use the best model found during training.
+            - eval_metric : str
+                The evaluation metric to be used during training.
+            - random_seed : int
+                The random seed value for the model.
+            - silent : bool
+                Whether to print messages during training.
+        """
+        hyperparameter_seed = np.random.choice(range(1, 50_001, 1))
+        self.hyperparameter_rng = np.random.default_rng(hyperparameter_seed)
+
+        return {
+            "iterations": 1000,
+
+            "learning_rate": self.hyperparameter_rng.choice(
+                np.arange(0.01, 1.01, 0.01)
+            ),
+
+            "depth": self.hyperparameter_rng.choice(range(1, 12, 1)),
+
+            "min_child_samples": self.hyperparameter_rng.choice(
+                range(1, 21, 1)
+            ),
+
+            "colsample_bylevel": self.hyperparameter_rng.choice(
+                np.arange(0.1, 1.01, 0.01)
+            ),
+
+            "subsample": self.hyperparameter_rng.choice(
+                np.arange(0.1, 1.01, 0.01)
+            ),
+
+            "reg_lambda": self.hyperparameter_rng.choice(range(1, 206, 1)),
+
+            "use_best_model": True,
+
+            "eval_metric": self.hyperparameter_rng.choice(
+                ["Logloss", "AUC", "F1", "Precision", "Recall", "PRAUC"]
+            ),
+
+            "random_seed": hyperparameter_seed,
+            "silent": True,
+        }
