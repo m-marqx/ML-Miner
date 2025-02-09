@@ -699,3 +699,49 @@ class ModelCreator:
                 """
             )
             raise type(e)(f"Error creating onchain features: {e}") from e
+
+    def create_onchain_features(
+        self,
+        feature: str,
+        short_window: int,
+        long_window: int,
+        bins: int,
+    ):
+        """
+        Create the onchain feature using a standard ratio feature
+        calculation.
+
+        This method sets the number of bins for the onchain features,
+        and then creates a new feature column by applying the
+        "create_std_ratio_feature" method. The feature is created for
+        the specified feature name using the provided short and long
+        window lengths.
+
+        Parameters
+        ----------
+        feature : str
+            The name of the feature for which the onchain standard
+            ratio is to be created.
+        short_window : int
+            The size of the short window used in the calculation.
+        long_window : int
+            The size of the long window used in the calculation.
+        bins : int
+            The number of bins to use when configuring the feature.
+
+        Returns
+        -------
+        self : ModelCreator
+            Returns the current instance with the newly created onchain
+            feature added.
+        """
+        self.set_bins(bins)
+
+        self.create_feature(
+            "create_std_ratio_feature",
+            [feature],
+            "D",
+            short_window,
+            long_window,
+        )
+        return self
