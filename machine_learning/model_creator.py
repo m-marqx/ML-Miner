@@ -745,3 +745,63 @@ class ModelCreator:
             long_window,
         )
         return self
+
+    def create_multiple_onchain_features(
+        self,
+        onchain_features_params: dict,
+    ) -> pd.DataFrame:
+        """
+        Create multiple onchain features based on provided parameters.
+
+        This method processes a dictionary of onchain feature parameters
+        and creates features for each specified feature using the
+        create_onchain_features method.
+
+        Parameters
+        ----------
+        onchain_features_params : dict
+            Dictionary containing parameters for onchain features
+            creation.
+            Each feature should have a nested dictionary with keys:
+                - 'short_window': Window size for short-term calculation
+                - 'long_window': Window size for long-term calculation
+                - 'bins': Number of bins for feature discretization
+            May optionally contain an 'onchain_seed' key which will be
+            ignored.
+
+        Returns
+        -------
+        pd.DataFrame
+            The current ModelCreator instance with newly created
+            features added.
+
+        Notes
+        -----
+        The method will ignore the 'onchain_seed' key if present in the
+        parameters dictionary. All numeric parameters are converted to
+        integers before use.
+        """
+        onchain_features: dict[str, float] = (
+            pd.Series(onchain_features_params)
+            .dropna()
+            .to_dict()
+        )
+
+        if "onchain_seed" in onchain_features.keys():
+            onchain_features.pop("onchain_seed")
+
+        for feature in onchain_features:
+            feature_params: dict[str, float] = onchain_features[feature]
+            short_window: int = int(feature_params["short_window"])
+            long_window: int = int(feature_params["long_window"])
+
+            bins: int = int(feature_params["bins"])
+
+            self.create_onchain_features(
+                feature=feature,
+                short_window=short_window,
+                long_window=long_window,
+                bins=bins,
+            )
+
+        return self
