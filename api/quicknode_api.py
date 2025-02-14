@@ -114,3 +114,67 @@ class QuickNodeAPI:
 
                 return response.json()["result"]
         raise ApiError(response.json())
+
+    def get_blockchain_info(self):
+        """
+        Retrieve information about the Bitcoin blockchain.
+
+        Makes GET requests to QuickNode API endpoints with automatic
+        failover between provided API keys.
+
+        Returns
+        -------
+        dict
+            Information about the Bitcoin blockchain from the Bitcoin RPC getblockchaininfo method.
+
+        Raises
+        ------
+        ValueError
+            If all API key requests fail.
+        """
+        start = time.perf_counter()
+        payload = json.dumps({
+        "method": "getblockchaininfo"
+        })
+
+        headers = {
+        'Content-Type': 'application/json'
+        }
+
+        for api_key in self.api_keys[self.default_api_key_idx:]:
+            self.default_api_key_idx = self.api_keys.index(api_key)
+
+            try:
+                response = requests.request(
+                    "POST", api_key, headers=headers, data=payload, timeout=60
+                )
+
+            except requests.exceptions.ConnectionError:
+                self.logger.critical("Connection error, retrying in 5 minutes")
+
+                time.sleep(300)
+
+                response = requests.request(
+                    "POST", api_key, headers=headers, data=payload, timeout=60
+                )
+                return response.json()
+
+            except requests.exceptions.Timeout:
+                self.logger.critical("Connection error, retrying in 2 minutes")
+
+                time.sleep(120)
+
+                response = requests.request(
+                    "POST", api_key, headers=headers, data=payload, timeout=60
+                )
+                return response.json()
+
+            if response.ok:
+                end = time.perf_counter()
+                time_elapsed = end - start
+
+                if time_elapsed < 1:
+                    time.sleep(1 - time_elapsed)
+
+                return response.json()["result"]
+        raise ApiError(response.json())
