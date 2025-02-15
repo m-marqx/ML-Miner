@@ -64,8 +64,6 @@ class ModelMiner:
     search_model(test_index: int, pct_adj: float = 0.5, train_in_middle:
     bool = True)
         Search for the best model parameters.
-
-
     """
     def __init__(
         self,
