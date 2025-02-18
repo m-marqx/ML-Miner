@@ -568,14 +568,51 @@ class ModelCreator:
             "silent": True,
         }
 
-    def beta_generate_hyperparameters(self, hyperparameter_seed) -> dict:
+    def beta_generate_hyperparameters(self, hyperparams_ranges) -> dict:
         """
-        Generate a dictionary of hyperparameters for the model.
+        Generate a dictionary of hyperparameters for the model with
+        custom ranges.
+
+        This method allows customizing the ranges for various
+        hyperparameters used in model creation. Default ranges are used
+        for any parameters not specified.
+
+        Parameters
+        ----------
+        **hyperparams_ranges : dict
+            Dictionary containing custom ranges for hyperparameters.
+            Supported keys are:
+            - learning_rate : tuple(float, float)
+                Range for learning rate
+                (default: (0.01, 1.0))
+            - depth : tuple(int, int)
+                Range for tree depth
+                (default: (1, 12))
+            - min_child_samples : tuple(int, int)
+                Range for minimum child samples
+                (default: (1, 20))
+            - colsample_bylevel : tuple(float, float)
+                Range for column sampling by level
+                (default: (0.1, 1.0))
+            - subsample : tuple(float, float)
+                Range for subsample ratio
+                (default: (0.1, 1.0))
+            - reg_lambda : tuple(int, int)
+                Range for regularization lambda
+                (default: (1, 20))
+            - eval_metric : list
+                List of evaluation metrics to choose from
+                (default:
+                ["Logloss", "AUC", "F1", "Precision", "Recall", "PRAUC"])
+            - random_seed : tuple(int, int)
+                Range for random seed
+                (default: (1, 50000))
 
         Returns
         -------
         dict
-            A dictionary containing the following hyperparameters:
+            Dictionary containing randomly sampled hyperparameters
+            with keys:
             - iterations : int
                 The number of iterations for the model.
             - learning_rate : float
@@ -601,36 +638,115 @@ class ModelCreator:
                 The random seed value for the model.
             - silent : bool
                 Whether to print messages during training.
+
+        Notes
+        -----
+        The method uses numpy's random number generator for sampling
+        values within the specified ranges. Float parameters use a
+        step size of 0.01 while integer parameters use a step size of 1.
         """
+        eval_metrics = ["Logloss", "AUC", "F1", "Precision", "Recall", "PRAUC"]
+
+        hyperparams_ranges["learning_rate"] = hyperparams_ranges.get(
+            "learning_rate", (0.01, 1.0)
+        )
+
+        hyperparams_ranges["depth"] = hyperparams_ranges.get(
+            "depth", (1, 12)
+        )
+
+        hyperparams_ranges["min_child_samples"] = hyperparams_ranges.get(
+            "min_child_samples", (1, 20)
+        )
+
+        hyperparams_ranges["colsample_bylevel"] = hyperparams_ranges.get(
+            "colsample_bylevel", (0.1, 1.0)
+        )
+
+        hyperparams_ranges["subsample"] = hyperparams_ranges.get(
+            "subsample", (0.1, 1.0)
+        )
+
+        hyperparams_ranges["reg_lambda"] = hyperparams_ranges.get(
+            "reg_lambda", (1, 205)
+        )
+
+        hyperparams_ranges["eval_metric"] = hyperparams_ranges.get(
+            "eval_metric", eval_metrics
+        )
+
+        hyperparams_ranges["random_seed"] = hyperparams_ranges.get(
+            "random_seed", (1, 50_000)
+        )
+
+        float_step = 0.01
+        int_step = 1
+
+        hyperparameter_seed = np.random.choice(
+            range(
+                hyperparams_ranges["random_seed"][0],
+                hyperparams_ranges["random_seed"][1] + int_step,
+                1
+            )
+        )
+
         self.hyperparameter_rng = np.random.default_rng(hyperparameter_seed)
 
         return {
             "iterations": 1000,
 
             "learning_rate": self.hyperparameter_rng.choice(
-                np.arange(0.01, 1.01, 0.01)
+                np.arange(
+                    hyperparams_ranges["learning_rate"][0],
+                    hyperparams_ranges["learning_rate"][1] + float_step,
+                    float_step
+                )
             ),
 
-            "depth": self.hyperparameter_rng.choice(range(1, 12, 1)),
+            "depth": self.hyperparameter_rng.choice(
+                range(
+                    hyperparams_ranges["depth"][0],
+                    hyperparams_ranges["depth"][1] + int_step,
+                    int_step
+                )
+            ),
 
             "min_child_samples": self.hyperparameter_rng.choice(
-                range(1, 21, 1)
+                range(
+                    hyperparams_ranges["min_child_samples"][0],
+                    hyperparams_ranges["min_child_samples"][1] + int_step,
+                    int_step
+                )
             ),
 
             "colsample_bylevel": self.hyperparameter_rng.choice(
-                np.arange(0.1, 1.01, 0.01)
+                np.arange(
+                    hyperparams_ranges["colsample_bylevel"][0],
+                    hyperparams_ranges["colsample_bylevel"][1] + float_step,
+                    float_step,
+                )
             ),
 
             "subsample": self.hyperparameter_rng.choice(
-                np.arange(0.1, 1.01, 0.01)
+                np.arange(
+                    hyperparams_ranges["subsample"][0],
+                    hyperparams_ranges["subsample"][1] + float_step,
+                    float_step,
+                )
             ),
 
-            "reg_lambda": self.hyperparameter_rng.choice(range(1, 206, 1)),
+            "reg_lambda": self.hyperparameter_rng.choice(
+                range(
+                    hyperparams_ranges["reg_lambda"][0],
+                    hyperparams_ranges["reg_lambda"][1] + int_step,
+                    int_step,
+                )
+            ),
 
             "use_best_model": True,
 
             "eval_metric": self.hyperparameter_rng.choice(
-                ["Logloss", "AUC", "F1", "Precision", "Recall", "PRAUC"]
+                hyperparams_ranges["eval_metric"]
             ),
 
             "random_seed": hyperparameter_seed,
