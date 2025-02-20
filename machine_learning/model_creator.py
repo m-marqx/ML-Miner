@@ -1044,3 +1044,181 @@ class ModelCreator:
             )
             raise type(e)(f"Error creating onchain features: {e}") from e
 
+    def create_onchain_catboost_model(
+        self,
+        onchain_features: dict,
+        max_trades: int = 3,
+        off_days: int = 7,
+        side: int = 1,
+        cutoff_point: int = 5,
+        return_type: Literal["results", "metrics"] = "results",
+        **hyperparameters,
+    ) -> dict:
+        """
+        Create a CatBoost model using generated onchain features.
+
+        This method creates onchain features based on the provided parameters,
+        builds a CatBoost model, and returns either the raw model results or
+        a dictionary of evaluation metrics and additional model details based
+        on the specified return type.
+
+        Parameters
+        ----------
+        onchain_features : dict
+            Dictionary containing onchain feature parameters which are used to
+            create new onchain features.
+        max_trades : int, optional
+            Maximum number of allowed trades (default is 3).
+        off_days : int, optional
+            Number of off days between trades (default is 7).
+        side : int, optional
+            Trading side parameter used for adjusting predictions (default is 1).
+        cutoff_point : int, optional
+            Cutoff point used in the model creation process (default is 5).
+        return_type : {"results", "metrics"}, optional
+            Specifies the kind of output to return. If "results", the method
+            returns the raw model results. If "metrics", it returns a dictionary
+            containing evaluation metrics and other model information (default is "results").
+        **hyperparameters : dict
+            Additional hyperparameters to pass to the model building process.
+
+        Returns
+        -------
+        dict
+            If return_type is "results", returns the raw model results as a DataFrame.
+            If return_type is "metrics", returns a dictionary containing evaluation metrics,
+            model dates interval, accumulated returns, drawdowns, total operations, and additional
+            model parameters.
+
+        Raises
+        ------
+        Exception
+            Raises an exception with extra debugging information if an error occurs
+            during model creation.
+        """
+        start: float = time.perf_counter()
+
+        self.create_multiple_onchain_features(onchain_features)
+
+        results, index_splits, target_series, adj_targets = (
+            self.create_model(
+                max_trades=max_trades,
+                off_days=off_days,
+                side=side,
+                cutoff_point=cutoff_point,
+                **hyperparameters,
+            )
+        )
+
+        if return_type == "results":
+            print("Split dates: ", index_splits)
+            return results
+
+        try:
+            model_dates_interval = pd.Interval(
+                results.index[0],
+                results.index[-1],
+                closed='both',
+            )
+
+            self.model_metrics = ModelMetrics(
+                self.train_in_middle,
+                index_splits,
+                results,
+                self.test_index,
+            )
+
+            accumulated_returns = (
+                self.model_metrics.calculate_accumulated_returns("all")
+            )
+
+            if min(accumulated_returns) <= 1:
+                return self.empty_dict
+
+            linear_return_test = accumulated_returns[0]
+            linear_return_val = accumulated_returns[1]
+            exponential_return_test = accumulated_returns[2]
+            exponential_return_val = accumulated_returns[3]
+
+            test_buys, val_buys = (
+                self.model_metrics.calculate_model_recommendations()
+            )
+
+            metrics_results = self.model_metrics.calculate_result_metrics(
+                target_series,
+                7,
+            )
+
+            if min(metrics_results["precisions"]) < 0.52:
+                return self.empty_dict
+
+            total_operations, total_operations_pct = (
+                self.model_metrics.calculate_total_operations(
+                    test_buys,
+                    val_buys,
+                    max_trades,
+                    off_days,
+                    side,
+                )
+            )
+
+            drawdowns = self.model_metrics.calculate_drawdowns()
+
+            return_ratios = self.model_metrics.calculate_result_ratios()
+
+            support_diffs = (
+                self.model_metrics
+                .calculate_result_support(adj_targets, side)
+            )
+
+            # get the results from the bear market that started in 2022
+            bearmarket_2022 = results.loc["2021-08-11":"2023-01-01"]
+
+            r2_test, r2_val, ols_coef_test, ols_coef_val = (
+                self.model_metrics.set_results_test(
+                    bearmarket_2022
+                ).calculate_ols_metrics()
+            )
+
+            return {
+                "onchain_features": onchain_features,
+                "hyperparameters": hyperparameters,
+                "metrics_results": [metrics_results],
+                "model_dates_interval": model_dates_interval,
+                "linear_accumulated_return_test": linear_return_test,
+                "linear_accumulated_return_val": linear_return_val,
+                "exponential_accumulated_return_test": exponential_return_test,
+                "exponential_accumulated_return_val": exponential_return_val,
+                "drawdown_full_test": drawdowns[0],
+                "drawdown_full_val": drawdowns[1],
+                "drawdown_adj_test": drawdowns[2],
+                "drawdown_adj_val": drawdowns[3],
+                "expected_return_test": metrics_results["expected_return_test"],
+                "expected_return_val": metrics_results["expected_return_val"],
+                "precisions_test": metrics_results["precisions_test"],
+                "precisions_val": metrics_results["precisions_val"],
+                "support_diff_test": support_diffs[0],
+                "support_diff_val": support_diffs[1],
+                "total_operations_test": total_operations[0],
+                "total_operations_val": total_operations[1],
+                "total_operations_pct_test": total_operations_pct[0],
+                "total_operations_pct_val": total_operations_pct[1],
+                "r2_in_2023": r2_test,
+                "r2_val": r2_val,
+                "ols_coef_2022": ols_coef_test,
+                "ols_coef_val": ols_coef_val,
+                "test_index": self.test_index,
+                "train_in_middle": self.train_in_middle,
+                "total_time": time.perf_counter() - start,
+                "return_ratios": return_ratios,
+                "side": side,
+                "max_trades": max_trades,
+                "off_days": off_days,
+            }
+
+        except Exception as e:
+            raise type(e)(
+                f"Error creating model: {e}"
+                + f"\n\n{onchain_features}"
+                + f"\n{hyperparameters}"
+            ) from e
