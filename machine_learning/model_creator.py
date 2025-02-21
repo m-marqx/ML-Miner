@@ -1068,19 +1068,25 @@ class ModelCreator:
             Dictionary containing onchain feature parameters which are used to
             create new onchain features.
         max_trades : int, optional
-            Maximum number of allowed trades (default is 3).
+            Maximum number of allowed trades
+            (default: 3).
         off_days : int, optional
-            Number of off days between trades (default is 7).
+            Number of off days between trades
+            (default: 7).
         side : int, optional
-            Trading side parameter used for adjusting predictions (default is 1).
+            Trading side parameter used for adjusting predictions
+            (default: 1).
         cutoff_point : int, optional
-            Cutoff point used in the model creation process (default is 5).
+            Cutoff point used in the model creation process
+            (default: 5).
         return_type : {"results", "metrics"}, optional
-            Specifies the kind of output to return. If "results", the method
-            returns the raw model results. If "metrics", it returns a dictionary
-            containing evaluation metrics and other model information (default is "results").
+            Specifies the kind of output to return. If "results", the
+            method returns the raw model results. If "metrics", it
+            returns a dictionary containing evaluation metrics and other
+            model information
+            (default: "results").
         **hyperparameters : dict
-            Additional hyperparameters to pass to the model building process.
+            Additional hyperparameters to pass to the model hyperparams
 
         Returns
         -------
