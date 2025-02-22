@@ -532,7 +532,7 @@ class ModelCreator:
             - silent : bool
                 Whether to print messages during training.
         """
-        hyperparameter_seed = np.random.choice(range(1, 50_001, 1))
+        hyperparameter_seed = np.random.randint(1, 100_000_000)
         self.hyperparameter_rng = np.random.default_rng(hyperparameter_seed)
 
         return {
