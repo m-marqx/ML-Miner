@@ -579,7 +579,7 @@ class ModelCreator:
 
         Parameters
         ----------
-        **hyperparams_ranges : dict
+        hyperparams_ranges : dict
             Dictionary containing custom ranges for hyperparameters.
             Supported keys are:
             - learning_rate : tuple(float, float)
@@ -676,20 +676,13 @@ class ModelCreator:
         )
 
         hyperparams_ranges["random_seed"] = hyperparams_ranges.get(
-            "random_seed", (1, 50_000)
+            "random_seed", (1, 100_000_000)
         )
 
         float_step = 0.01
         int_step = 1
 
-        hyperparameter_seed = np.random.choice(
-            range(
-                hyperparams_ranges["random_seed"][0],
-                hyperparams_ranges["random_seed"][1] + int_step,
-                1
-            )
-        )
-
+        hyperparameter_seed = np.random.randint(1, 100_000_000)
         self.hyperparameter_rng = np.random.default_rng(hyperparameter_seed)
 
         return {
