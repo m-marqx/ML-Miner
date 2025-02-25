@@ -927,7 +927,7 @@ class ModelCreator:
         try:
             self.calculate_onchain_features()
 
-            onchain_seed = np.random.randint(1, 50_001)
+            onchain_seed = np.random.randint(1, 100_000_000)
             self.onchain_rng = np.random.default_rng(onchain_seed)
 
             if len(self.onchain_features) > 1:
