@@ -1221,3 +1221,175 @@ class ModelCreator:
                 + f"\n\n{onchain_features}"
                 + f"\n{hyperparameters}"
             ) from e
+
+    def generate_onchain_catboost_model(
+        self,
+        max_trades: int = 3,
+        off_days: int = 7,
+        side: int = 1,
+        cutoff_point: int = 5,
+    ) -> dict:
+        """
+        Create the CatBoost model.
+
+        Returns
+        -------
+        dict
+            The dictionary containing the hyperparameters and the
+            onchain features used.
+        """
+        start: float = time.perf_counter()
+
+        hyperparameters = self.generate_hyperparameters()
+        onchain_features = self.generate_onchain_features()
+
+        try:
+            results, index_splits, target_series, adj_targets = (
+                self.create_model(
+                    max_trades=max_trades,
+                    off_days=off_days,
+                    side=side,
+                    cutoff_point=cutoff_point,
+                    **hyperparameters,
+                )
+            )
+
+            self.model_metrics = ModelMetrics(
+                self.train_in_middle,
+                index_splits,
+                results,
+                self.test_index,
+            )
+
+            results_test = self.model_metrics.results_test
+            results_val = self.model_metrics.results_val
+
+            test_buys, val_buys = (
+                self.model_metrics.calculate_model_recommendations()
+            )
+
+            is_hold_results = (
+                len(test_buys) <= 1
+                or len(val_buys) <= 1
+                or len(results_test["Liquid_Result"].value_counts()) <= 1
+                or len(results_val["Liquid_Result"].value_counts()) <= 1
+            )
+
+            if is_hold_results:
+                return self.empty_dict
+
+            metrics_results = self.model_metrics.calculate_result_metrics(
+                target_series,
+                7,
+            )
+
+            if min(metrics_results["precisions"]) < 0.52:
+                return self.empty_dict
+
+            # get the results from the bear market that started in 2022
+            bearmarket_2022 = results.loc["2021-08-11":"2023-01-01"]
+
+            r2_test, r2_val, ols_coef_test, ols_coef_val = (
+                self.model_metrics.set_results_test(
+                    bearmarket_2022
+                ).calculate_ols_metrics()
+            )
+
+            total_operations, total_operations_pct = (
+                self.model_metrics.calculate_total_operations(
+                    test_buys,
+                    val_buys,
+                    max_trades,
+                    off_days,
+                    side,
+                )
+            )
+
+            drawdowns = self.model_metrics.calculate_drawdowns()
+
+            return_ratios = self.model_metrics.calculate_result_ratios()
+
+            support_diffs = self.model_metrics.calculate_result_support(
+                adj_targets, side
+            )
+
+            return {
+                "onchain_features": onchain_features,
+                "hyperparameters": hyperparameters,
+                "metrics_results": [metrics_results],
+                "model_dates_interval": None,
+                "linear_accumulated_return_test": None,
+                "linear_accumulated_return_val": None,
+                "exponential_accumulated_return_test": None,
+                "exponential_accumulated_return_val": None,
+                "drawdown_full_test": drawdowns[0],
+                "drawdown_full_val": drawdowns[1],
+                "drawdown_adj_test": drawdowns[2],
+                "drawdown_adj_val": drawdowns[3],
+                "expected_return_test": metrics_results["expected_return_test"],
+                "expected_return_val": metrics_results["expected_return_val"],
+                "precisions_test": metrics_results["precisions_test"],
+                "precisions_val": metrics_results["precisions_val"],
+                "support_diff_test": support_diffs[0],
+                "support_diff_val": support_diffs[1],
+                "total_operations_test": total_operations[0],
+                "total_operations_val": total_operations[1],
+                "total_operations_pct_test": total_operations_pct[0],
+                "total_operations_pct_val": total_operations_pct[1],
+                "r2_in_2023": r2_test,
+                "r2_val": r2_val,
+                "ols_coef_2022": ols_coef_test,
+                "ols_coef_val": ols_coef_val,
+                "test_index": self.test_index,
+                "train_in_middle": self.train_in_middle,
+                "total_time": time.perf_counter() - start,
+                "return_ratios": return_ratios,
+                "side": side,
+                "max_trades": max_trades,
+                "off_days": off_days,
+            }
+
+        except Exception as e:
+            raise type(e)(
+                f"Error creating model: {e}"
+                + f"\n\n{onchain_features}"
+                + f"\n{hyperparameters}"
+            ) from e
+
+    def beta_generate_onchain_catboost_model(
+            self,
+            hyperparams_ranges: dict,
+            max_trades: int = 3,
+            off_days: int = 7,
+            side: int = 1,
+            cutoff_point: int = 5,
+        ) -> dict:
+        """
+            Create the CatBoost model.
+
+            Returns
+            -------
+            dict
+                The dictionary containing the hyperparameters and the
+                onchain features used.
+            """
+        start: float = time.perf_counter()
+
+        hyperparameters = self.beta_generate_hyperparameters(
+            hyperparams_ranges
+        )
+
+        onchain_features = self.generate_onchain_features()
+
+        metrics = self.create_onchain_catboost_model(
+                onchain_features,
+                max_trades,
+                off_days,
+                side,
+                cutoff_point,
+                "metrics",
+                **hyperparameters,
+            )
+
+        self.logger.info("Total time: %s", time.perf_counter() - start)
+        return metrics
