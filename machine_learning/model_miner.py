@@ -592,7 +592,7 @@ class ModelMiner:
             if min(precisions) < 0.52:
                 return self.empty_dict
 
-            #Filter the results that doesn't have profit in bear market
+            # Filter the results that doesn't have profit in bear market
             bearmarket_2022 = (
                 mta.loc["2021-08-11":"2023-01-01", "Liquid_Result"]
                 .cumprod()
