@@ -282,3 +282,32 @@ class MoralisAPI:
             swaps_df = swaps_df.drop(columns=coin_name_columns)
 
         return swaps_df
+
+    def get_token_price(self, block_number):
+        """
+        Retrieves the token price at a specified block number using the 
+        Moralis API.
+
+        Parameters
+        ----------
+        block_number : int
+            The block number at which to fetch the token price.
+
+        Returns
+        -------
+        pandas.Series
+            A Series containing the token price data as returned by the 
+            Moralis API.
+        """
+        params = {
+            "chain": "polygon",
+            "to_block": block_number,
+            "address": "0x1BFD67037B42Cf73acF2047067bd4F2C47D9BfD6",
+        }
+
+        result = evm_api.token.get_token_price(
+            api_key=self.api_key,
+            params=params,
+        )
+
+        return pd.Series(result)
