@@ -1,10 +1,11 @@
-import logging
+import time
 
 import pandas as pd
 import numpy as np
 
 from moralis import evm_api
-
+from custom_exceptions.invalid_arguments import InvalidArgumentError
+from utils.log_handler import create_logger
 
 class MoralisAPI:
     """
@@ -43,29 +44,13 @@ class MoralisAPI:
 
         Parameters
         ----------
-        verbose : bool
-            If True, sets the logger to INFO level.
         api_key : str
             The API key for the Moralis API.
+        logger : logging.Logger
+            Logger instance for logging information.
         """
         self.api_key = api_key
-
-        self.logger = logging.getLogger("moralis_API")
-        formatter = logging.Formatter(
-            "%(levelname)s %(asctime)s: %(message)s", datefmt="%H:%M:%S"
-        )
-
-        handler = logging.StreamHandler()
-        handler.setFormatter(formatter)
-
-        if self.logger.hasHandlers():
-            self.logger.handlers.clear()
-
-        self.logger.addHandler(handler)
-        self.logger.propagate = False
-
-        if verbose:
-            self.logger.setLevel(logging.INFO)
+        self.logger = create_logger("moralis_api", verbose)
 
     def process_transaction_data(self, data: list) -> list:
         """
