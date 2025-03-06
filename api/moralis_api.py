@@ -38,7 +38,7 @@ class MoralisAPI:
         Retrieves all swaps for a given wallet address.
     """
 
-    def __init__(self, verbose: bool, api_key: str):
+    def __init__(self, verbose: bool, api_key: str, chain: str = "polygon"):
         """
         Initialize the MoralisAPI object.
 
@@ -46,10 +46,13 @@ class MoralisAPI:
         ----------
         api_key : str
             The API key for the Moralis API.
+        chain : str
+            The blockchain to retrieve data for.
         logger : logging.Logger
             Logger instance for logging information.
         """
         self.api_key = api_key
+        self.chain = chain
         self.logger = create_logger("moralis_api", verbose)
 
     def process_transaction_data(self, data: list) -> list:
@@ -285,7 +288,7 @@ class MoralisAPI:
             Moralis API.
         """
         params = {
-            "chain": "polygon",
+            "chain": self.chain,
             "to_block": block_number,
             "address": "0x1BFD67037B42Cf73acF2047067bd4F2C47D9BfD6",
         }
