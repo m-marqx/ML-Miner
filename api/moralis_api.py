@@ -102,23 +102,69 @@ class MoralisAPI:
     def get_transactions(
         self,
         wallet: str,
-        excluded_categories: list | None = None
+        excluded_categories: list | None = None,
+        **kwargs,
     ) -> list:
         """
-        Retrieves all swaps for a given wallet address.
+        Retrieves transaction history for the specified wallet address 
+        while filtering out transactions that are marked as spam or 
+        belong to any of the excluded categories.
 
         Parameters
         ----------
         wallet : str
-            The wallet address to retrieve swaps for.
+            The wallet address for which to retrieve the transaction 
+            history.
+        excluded_categories : list or None, optional
+            A list of transaction categories to exclude. If None, a 
+            default list of categories including "contract interaction",
+            "token receive", "airdrop", "receive", "approve", and "send"
+            will be used.
+        **kwargs : dict
+            Additional keyword arguments to filter transactions, such 
+            as:
+                - **from_block**: int
+                    The minimum block number to start retrieving 
+                    transactions.
+                - **to_block**: int
+                    The maximum block number to stop retrieving 
+                    transactions.
+                - **from_date**: str
+                    The start date 
+                    (in seconds or a momentjs-compatible datestring).
+                - **to_date**: str
+                    The end date 
+                    (in seconds or a momentjs-compatible datestring).
+                - **include_internal_transactions**: bool
+                    Whether to include internal transactions in the 
+                    results.
+                - **nft_metadata**: bool
+                    Whether to include NFT metadata in the results.
+                - **cursor**: str
+                    A pagination cursor returned from previous 
+                    responses.
+                - **order**: str
+                    The order of transactions, either "ASC" for 
+                    ascending or "DESC" for descending.
+                - **limit**: int
+                    The maximum number of transactions to retrieve.
+
+        Returns
+        -------
+        list
+            A list of transaction dictionaries that have been filtered to exclude
+            spam and the specified categories.
+
+        Side Effects
+        ------------
+        Logs the start and completion of the transaction retrieval process.
         """
         self.logger.info("Retrieving transactions for wallet: %s", wallet)
 
-        params = {
-            "chain": "polygon",
-            "order": "DESC",
-            "address": wallet,
-        }
+        params = {**kwargs}
+        params['chain'] = kwargs.get('chain', self.chain)
+        params['address'] = kwargs.get('address', wallet)
+        params['order'] = kwargs.get('order', 'DESC')
 
         txn_infos = evm_api.wallets.get_wallet_history(
             api_key=self.api_key,
