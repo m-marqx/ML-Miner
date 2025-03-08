@@ -242,7 +242,12 @@ class MoralisAPI:
 
         return swaps_data
 
-    def get_account_swaps(self, wallet: str, coin_name: bool = False, add_summary: bool = False) -> pd.DataFrame:
+    def get_account_swaps(
+        self,
+        wallet: str,
+        coin_name: bool = False,
+        add_summary: bool = False,
+    ) -> pd.DataFrame:
         """
         Retrieves all swaps for a given wallet address.
 
