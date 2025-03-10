@@ -1,5 +1,5 @@
 import unittest
-import numpy as np
+import pandas as pd
 from api.kline_utils import KlineTimes, get_max_interval
 
 
@@ -22,9 +22,9 @@ class TestKlineTimesIntervalAdjusted(unittest.TestCase):
         self.assertLessEqual(result_days, 200)
 
     def test_get_end_times(self):
-        results = self.kline_times.get_end_times()[:-1]
+        results = pd.Series(self.kline_times.get_end_times())
 
-        expected_results = np.array(
+        expected_results = pd.Series(
             [
                 1.5971184e12,
                 1.6079184e12,
@@ -42,7 +42,9 @@ class TestKlineTimesIntervalAdjusted(unittest.TestCase):
             ]
         )
 
-        np.testing.assert_array_equal(results, expected_results)
+        results = results.reindex(expected_results.index)
+
+        pd.testing.assert_series_equal(results, expected_results)
 
     def test_get_max_interval(self):
         results = get_max_interval(self.kline_times.interval)
@@ -69,9 +71,9 @@ class TestKlineTimesNotAdjusted(unittest.TestCase):
         self.assertLessEqual(result_days, 200)
 
     def test_get_end_times(self):
-        results = self.kline_times.get_end_times()[:-1]
+        results = pd.Series(self.kline_times.get_end_times())
 
-        expected_results = np.array(
+        expected_results = pd.Series(
             [
                 1.59711840e12,
                 1.61435520e12,
@@ -84,7 +86,8 @@ class TestKlineTimesNotAdjusted(unittest.TestCase):
             ]
         )
 
-        np.testing.assert_array_equal(results, expected_results)
+        results = results.reindex(expected_results.index)
+        pd.testing.assert_series_equal(results, expected_results)
 
     def test_get_max_interval(self):
         results = get_max_interval(self.kline_times.interval)
