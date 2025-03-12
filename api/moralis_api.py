@@ -322,7 +322,11 @@ class MoralisAPI:
 
         return swaps_df
 
-    def get_token_price(self, block_number):
+    def get_token_price(
+        self,
+        block_number: int,
+        address: str = "0x1BFD67037B42Cf73acF2047067bd4F2C47D9BfD6",
+    ) -> pd.Series:
         """
         Retrieves the token price at a specified block number using the 
         Moralis API.
@@ -331,6 +335,8 @@ class MoralisAPI:
         ----------
         block_number : int
             The block number at which to fetch the token price.
+        address : str
+            The address of the token to retrieve the price for.
 
         Returns
         -------
@@ -341,7 +347,7 @@ class MoralisAPI:
         params = {
             "chain": self.chain,
             "to_block": block_number,
-            "address": "0x1BFD67037B42Cf73acF2047067bd4F2C47D9BfD6",
+            "address": address,
         }
 
         result = evm_api.token.get_token_price(
