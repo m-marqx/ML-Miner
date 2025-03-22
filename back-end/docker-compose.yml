@@ -1,0 +1,16 @@
+services:
+  btc-updater:
+    build: .
+    volumes:
+      - C:/Repositories/ML-Miner/data:/data
+    environment:
+      - quicknode_endpoint_1=${quicknode_endpoint_1}
+      - quicknode_endpoint_2=${quicknode_endpoint_2}
+      - quicknode_endpoint_3=${quicknode_endpoint_3}
+      - quicknode_endpoint_4=${quicknode_endpoint_4}
+      - quicknode_endpoint_5=${quicknode_endpoint_5}
+      - quicknode_endpoint_6=${quicknode_endpoint_6}
+      - quicknode_endpoint_7=${quicknode_endpoint_7}
+      - quicknode_endpoint_8=${quicknode_endpoint_8}
+      - quicknode_endpoint_9=${quicknode_endpoint_9}
+      - quicknode_endpoint_10=${quicknode_endpoint_10}
