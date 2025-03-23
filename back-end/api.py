@@ -1,9 +1,11 @@
 import os
+import pathlib
 import json
 from ast import literal_eval
 
 import ccxt
 import pandas as pd
+import numpy as np
 import pytz
 from datetime import datetime
 import klib
@@ -15,6 +17,17 @@ from machine_learning.ml_utils import DataHandler, get_recommendation
 
 
 app = Flask(__name__)
+CORS(app)
+
+
+@app.after_request
+def add_cors_headers(response):
+    response.headers.add("Access-Control-Allow-Origin", "*")
+    response.headers.add(
+        "Access-Control-Allow-Headers", "Content-Type,Authorization"
+    )
+    response.headers.add("Access-Control-Allow-Methods", "GET,POST,OPTIONS")
+    return response
 
 @app.route("/update_price_data", methods=["GET"])
 def update_BTC_price_data():
