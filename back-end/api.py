@@ -169,8 +169,8 @@ def get_recommendations():
 
 @app.route("/account/buys", methods=["POST"])
 def get_buys():
-    api_key = request.form["api_key"]
-    wallet = request.form["wallet"]
+    api_key = request.json["api_key"]
+    wallet = request.json["wallet"]
 
     df = AccountAPI(api_key, False).get_buys(wallet, "WBTC").iloc[-3:]
     df["sell_when"] = ["67%", "33%", "0%"]
@@ -196,7 +196,7 @@ def get_buys():
         "sell_when",
     ]
     response = jsonify(df[columns].to_dict())
-    response.headers.add("Content-Type", "multipart/form-data; boundary=---011000010111000001101001")
+    response.headers.add("Content-Type", "application/json")
 
     return response
 
