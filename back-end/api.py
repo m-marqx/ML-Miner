@@ -227,15 +227,21 @@ def wallet_data(wallet_df, asset_column: str, usdt_column: str):
 
 @app.route("/account/history", methods=["POST"])
 def get_account_balance_history():
-    api_key = request.form["api_key"]
-    wallet = request.form["wallet"]
+    api_key = request.json["api_key"]
+    wallet = request.json["wallet"]
 
     wallet_balance = get_account_balance(wallet, api_key)
     wallet_df = wallet_data(wallet_balance, "WBTC", "USDT").drop(
         columns=["LGNS", "WBTC", "usdPrice"]
     )
 
-    return jsonify(wallet_df.to_dict())
+    if wallet_df.empty:
+        return jsonify({"error": "No data available for the given wallet."}), 404
+
+    response = jsonify(wallet_df.to_dict())
+    response.headers.add("Content-Type", "application/json")
+
+    return response
 
 if __name__ == "__main__":
     app.run(host="0.0.0.0", port=2000, debug=True)
