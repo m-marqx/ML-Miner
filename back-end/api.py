@@ -247,6 +247,40 @@ def wallet_data(wallet_df, asset_column: str, usdt_column: str):
 
     return wallet_df.sort_index()
 
+
+def process_balance(wallet_df: pd.DataFrame, indexes_to_drop: pd.Index): 
+    result = (
+        wallet_df.reset_index()["total_usd"]
+        .pct_change()
+        .drop(index=indexes_to_drop)
+        + 1
+    ).cumprod() - 1
+
+    btc_result = (
+        wallet_df.reset_index()["usdPrice"]
+        .pct_change()
+        .drop(index=indexes_to_drop)
+        + 1
+    ).cumprod() - 1
+
+    results = pd.concat(
+        [result.rename("Modelo"), btc_result.rename("BTC")], axis=1
+    )
+
+    results = results.fillna(0)
+    results["highest_BTC"] = results["BTC"].cummax()
+    results["highest_Modelo"] = results["Modelo"].cummax()
+    results["data"] = wallet_df.reset_index()["blockTimestamp"]
+    results = results.set_index("data")
+    results["asset_ratio"] = wallet_df.reset_index().set_index(
+        "blockTimestamp"
+    )["asset_ratio"]
+    results[results.columns[:-1]] = (
+        results[results.columns[:-1]]
+    )
+    return results
+
+
 @app.route("/account/history", methods=["POST"])
 def get_account_balance_history():
     api_key = request.json["api_key"]
