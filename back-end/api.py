@@ -285,14 +285,18 @@ def process_balance(wallet_df: pd.DataFrame, indexes_to_drop: pd.Index):
 def get_account_balance_history():
     api_key = request.json["api_key"]
     wallet = request.json["wallet"]
+    update = request.json.get("update", "false").lower() == "true"
 
-    wallet_balance = get_account_balance(wallet, api_key)
-    wallet_df = wallet_data(wallet_balance, "WBTC", "USDT").drop(
-        columns=["LGNS", "WBTC", "usdPrice"]
-    )
+    wallet_balance = get_account_balance(wallet, api_key, update)
+    wallet_df = wallet_data(wallet_balance, "WBTC", "USDT")
+    wallet_df = process_balance(wallet_df, 33)
+    wallet_df.index = wallet_df.index.strftime("%Y-%m-%d")
 
     if wallet_df.empty:
-        return jsonify({"error": "No data available for the given wallet."}), 404
+        return (
+            jsonify({"error": "No data available for the given wallet."}),
+            404,
+        )
 
     response = jsonify(wallet_df.to_dict())
     response.headers.add("Content-Type", "application/json")
