@@ -200,13 +200,35 @@ def get_buys():
 
     return response
 
-def get_account_balance(wallet, api_key):
-    moralis_API = MoralisAPI(verbose=False, api_key=api_key)
 
-    return moralis_API.get_wallet_token_balances_history(
-        wallet,
-        "0x1BFD67037B42Cf73acF2047067bd4F2C47D9BfD6",
+def get_account_balance(wallet: str, api_key: str, update: bool = False):
+    wallet_path = pathlib.Path.cwd().joinpath(
+        "data",
+        "api_data",
+        "cryptodata",
+        "wallet_balances.parquet",
     )
+
+    wallet_df = pd.read_parquet(wallet_path)
+
+    if update:
+        moralis_API = MoralisAPI(verbose=False, api_key=api_key)
+
+        updated_data = moralis_API.get_wallet_token_balances_history(
+            wallet,
+            "0x1BFD67037B42Cf73acF2047067bd4F2C47D9BfD6",
+            from_block=int(wallet_df.index[1]),
+        )
+
+        wallet_df = (
+            wallet_df.sort_index()
+            .combine_first(updated_data)
+            .replace(np.nan, 0)
+        )
+
+        wallet_df.to_parquet(wallet_path)
+    return wallet_df
+
 
 def wallet_data(wallet_df, asset_column: str, usdt_column: str):
     wallet_df[asset_column] = wallet_df[asset_column].fillna(0)
