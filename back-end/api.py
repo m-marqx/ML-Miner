@@ -303,5 +303,31 @@ def get_account_balance_history():
 
     return response
 
+
+@app.route("/account/changes/month", methods=["POST"])
+def get_account_balance_monthly():
+    api_key = request.json["api_key"]
+    wallet = request.json["wallet"]
+    update = request.json.get("update", "false").lower() == "true"
+
+    wallet_balance = get_account_balance(wallet, api_key, update)
+    wallet_df = wallet_data(wallet_balance, "WBTC", "USDT")
+    wallet_df = process_balance(wallet_df, 33)
+    wallet_df = (wallet_df.diff()).resample("M").sum() * 100
+    wallet_df = wallet_df.iloc[:, :2].round(2)
+
+    wallet_df.index = wallet_df.index.strftime("%Y-%m-%d")
+
+    if wallet_df.empty:
+        return (
+            jsonify({"error": "No data available for the given wallet."}),
+            404,
+        )
+
+    response = jsonify(wallet_df.to_dict())
+    response.headers.add("Content-Type", "application/json")
+
+    return response
+
 if __name__ == "__main__":
     app.run(host="0.0.0.0", port=2000, debug=True)
