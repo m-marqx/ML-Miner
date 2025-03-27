@@ -17,7 +17,12 @@ from machine_learning.ml_utils import DataHandler, get_recommendation
 
 
 app = Flask(__name__)
-CORS(app)
+# Configure CORS with specific origins instead of allowing all origins
+CORS(app, resources={r"/*": {
+    "origins": ["http://localhost:3000"],
+    "methods": ["GET", "POST", "OPTIONS"],
+    "allow_headers": ["Content-Type", "Authorization"]
+}})
 
 
 @app.after_request
@@ -31,8 +36,9 @@ def add_cors_headers(response):
 
 @app.route("/update_price_data", methods=["GET"])
 def update_BTC_price_data():
+    database_url = os.getenv("TEST_DATABASE_URL")
     try:
-        old_data = pd.read_parquet("data/api_data/cryptodata/dynamic_btc.parquet")
+        old_data = pd.read_sql("btc", con=database_url, index_col="date")
         last_time = pd.to_datetime(old_data.index[-3]).timestamp() * 1000
 
         ccxt_api = CcxtAPI(
@@ -42,8 +48,10 @@ def update_BTC_price_data():
         new_data = ccxt_api.get_all_klines().to_OHLCV().data_frame
 
         btc = new_data.combine_first(old_data).drop_duplicates()
-        btc.to_parquet("data/api_data/cryptodata/dynamic_btc.parquet")
+        btc.to_sql("btc", con=database_url, if_exists="replace")
+
         return jsonify({"status": "success", "message": "Data updated successfully"})
+
     except Exception as e:
         return jsonify({"status": "error", "message": str(e)})
 
@@ -83,13 +91,12 @@ def create_model(configs_dataset, x, model_df):
 
 @app.route("/get_recommendations", methods=["GET"])
 def get_recommendations():
-    price_data = pd.read_parquet(
-        "data/api_data/cryptodata/dynamic_btc.parquet"
-    )
+    database_url = os.getenv("TEST_DATABASE_URL")
+    price_data = pd.read_sql("btc", con=database_url, index_col="date")
     model_df = calculate_targets(price_data)
 
-    results = pd.read_parquet(
-        r"data\models\05-08-2024\btc_best_results_1_max_trade_05082024.parquet"
+    results = pd.read_sql(
+        "backtest_results_model", con=database_url, index_col="date"
     )
 
     hyperparams = literal_eval(json.loads(os.getenv("33139_hyperparams")))
@@ -108,7 +115,7 @@ def get_recommendations():
     test_model = create_model(configs, 33139, model_df)[33139][
         "Liquid_Result"
     ].loc[:"28-07-2024"]
-    expected_results = results["33139"]["Liquid_Result"].loc[:"28-07-2024"]
+    expected_results = results["Liquid_Result"].loc[:"28-07-2024"]
 
     pd.testing.assert_series_equal(test_model, expected_results)
 
@@ -167,6 +174,7 @@ def get_recommendations():
 
     return jsonify(itables_recommendations.iloc[::-1].to_dict())
 
+
 @app.route("/account/buys", methods=["POST"])
 def get_buys():
     api_key = request.json["api_key"]
@@ -202,14 +210,9 @@ def get_buys():
 
 
 def get_account_balance(wallet: str, api_key: str, update: bool = False):
-    wallet_path = pathlib.Path.cwd().joinpath(
-        "data",
-        "api_data",
-        "cryptodata",
-        "wallet_balances.parquet",
-    )
+    database_url = os.getenv("TEST_DATABASE_URL")
 
-    wallet_df = pd.read_parquet(wallet_path)
+    wallet_df = pd.read_sql("wallet_balances", con=database_url, index_col="height")
 
     if update:
         moralis_API = MoralisAPI(verbose=False, api_key=api_key)
@@ -226,7 +229,12 @@ def get_account_balance(wallet: str, api_key: str, update: bool = False):
             .replace(np.nan, 0)
         )
 
-        wallet_df.to_parquet(wallet_path)
+        wallet_df.to_sql(
+            "wallet_balances",
+            con=database_url,
+            if_exists="replace",
+            index=True,
+        )
     return wallet_df
 
 
