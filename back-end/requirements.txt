@@ -13,3 +13,6 @@ cryptoexplorer==1.1
 joblib==1.4.2
 flask==3.1.0
 flask-cors==5.0.1
+gunicorn==23.0.0
+SQLAlchemy==2.0.39
+psycopg2==2.9.10
