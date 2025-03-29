@@ -1,0 +1,32 @@
+name: Odin System Docker Image
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - 'front-end/**'
+  workflow_dispatch:
+
+jobs:
+  build_and_publish:
+    runs-on: ubuntu-latest
+    env:
+      POSTGRES_USER: ${{ secrets.POSTGRES_DB_USER }}
+      POSTGRES_PASSWORD: ${{ secrets.POSTGRES_DB_PASSWORD }}
+      POSTGRES_DB: ${{ secrets.POSTGRES_DB }}
+    steps:
+      - uses: actions/checkout@v3
+      - name: Login to GitHub Container Registry
+        run: docker login --username ${{ github.repository_owner }} --password ${{ secrets.GIT_PASSWORD }} ghcr.io
+
+      - name: Build Docker image
+        run: |
+          docker build ./front-end \
+            --build-arg POSTGRES_USER=$POSTGRES_USER \
+            --build-arg POSTGRES_PASSWORD=$POSTGRES_PASSWORD \
+            --build-arg POSTGRES_DB=$POSTGRES_DB \
+            -t ghcr.io/${{ github.repository_owner }}/ml-app-page:latest
+
+      - name: Push Docker image to registry
+        run: docker push ghcr.io/${{ github.repository_owner }}/ml-app-page:latest
