@@ -237,7 +237,6 @@ def get_account_balance(wallet: str, api_key: str, update: bool = False):
         )
     return wallet_df
 
-
 def wallet_data(wallet_df, asset_column: str, usdt_column: str):
     wallet_df[asset_column] = wallet_df[asset_column].fillna(0)
     wallet_df[usdt_column] = wallet_df[usdt_column].fillna(0)
