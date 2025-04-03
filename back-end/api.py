@@ -237,12 +237,31 @@ def get_account_balance(wallet: str, api_key: str, update: bool = False):
         )
     return wallet_df
 
-def wallet_data(wallet_df, asset_column: str, usdt_column: str):
-    wallet_df[asset_column] = wallet_df[asset_column].fillna(0)
-    wallet_df[usdt_column] = wallet_df[usdt_column].fillna(0)
+
+def wallet_data(
+    wallet_df,
+    asset_column: str,
+    usdt_column: str | list | pd.Index | None  = None,
+):
+    if isinstance(usdt_column, (list, pd.Index, str)):
+        raise ValueError(
+            "usdt_column must be a list, pd.Index, or str."
+        )
+
+    if usdt_column is None:
+        usdt_column = ["USDT", "USDC", "DAI", "TUSD", "BUSD"]
+
+    usd_df = pd.DataFrame()
+    for column in wallet_df.columns:
+        if column in usdt_column:
+            usd_df[column] = wallet_df[column].fillna(0)
+
+    usd_df = usd_df.sum(axis=1)
+
+    wallet_df["usd"] = usd_df
 
     wallet_df["asset_usd"] = wallet_df["usdPrice"] * wallet_df[asset_column]
-    wallet_df["total_usd"] = wallet_df[usdt_column] + wallet_df["asset_usd"]
+    wallet_df["total_usd"] = wallet_df["usd"] + wallet_df["asset_usd"]
 
     wallet_df["asset_ratio"] = (
         wallet_df["asset_usd"] / wallet_df["total_usd"]
