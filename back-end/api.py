@@ -210,31 +210,64 @@ def get_buys():
 
 
 def get_account_balance(wallet: str, api_key: str, update: bool = False):
-    database_url = os.getenv("TEST_DATABASE_URL")
+    database_url = os.getenv("DATABASE_URL")
 
-    wallet_df = pd.read_sql("wallet_balances", con=database_url, index_col="height")
+    wallet_df = pd.read_sql(
+        "wallet_balances",
+        con=database_url,
+        index_col="height",
+    )
 
     if update:
-        moralis_API = MoralisAPI(verbose=False, api_key=api_key)
+        wallet_df = wallet_df.sort_index(ascending=False)
 
-        updated_data = moralis_API.get_wallet_token_balances_history(
-            wallet,
-            "0x1BFD67037B42Cf73acF2047067bd4F2C47D9BfD6",
+        moralis_api = MoralisAPI(
+            verbose=True,
+            api_key=api_key,
+        )
+
+        wallet_blocks = moralis_api.get_wallet_blocks(
+            wallet_address=wallet,
             from_block=int(wallet_df.index[1]),
         )
 
-        wallet_df = (
-            wallet_df.sort_index()
-            .combine_first(updated_data)
-            .replace(np.nan, 0)
+        wallet_blocks = (
+            pd.Series(wallet_blocks)
+            .sort_values(ascending=True)
+            .tolist()
         )
 
-        wallet_df.to_sql(
-            "wallet_balances",
-            con=database_url,
-            if_exists="replace",
-            index=True,
-        )
+        wallet_df_adj = wallet_df.copy().iloc[2:]
+
+        for block in wallet_blocks:
+            moralis_api.logger.info(
+                f"Getting token balances for block {block}."
+            )
+
+            temp_df = moralis_api.get_wallet_token_balances(wallet, block).T
+
+            token_price = moralis_api.fetch_token_price(
+                block,
+                "0x1BFD67037B42Cf73acF2047067bd4F2C47D9BfD6",
+            )
+
+            temp_df["usdPrice"] = token_price["usdPrice"]
+            temp_df["blockTimestamp"] = pd.Timestamp(
+                int(token_price["blockTimestamp"]),
+                unit="ms",
+            )
+            temp_df.index.name = "height"
+
+            wallet_df_adj = pd.concat([temp_df, wallet_df_adj], axis=0)
+
+            wallet_df_adj.to_sql(
+                "wallet_balances",
+                con=database_url,
+                if_exists="replace",
+                index=True,
+                index_label="height",
+            )
+
     return wallet_df
 
 
