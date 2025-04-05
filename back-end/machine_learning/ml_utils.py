@@ -296,8 +296,8 @@ def get_recommendation(
         long_color = "Open Position"
         do_nothing_color = "——————"
         short_color = "Close Position"
-        start_html = ""
-        end_html = ""
+        start_html = " | "
+        end_html = " |"
 
     trade_sides = [
         positions_df["Position"] == 1,
