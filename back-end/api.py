@@ -388,5 +388,44 @@ def get_account_balance_monthly():
 
     return response
 
+@app.route("/btc/update", methods=["POST"])
+def update_btc_data():
+    database_url = os.getenv("DATABASE_URL")
+    database_df = pd.read_sql("btc", con=database_url, index_col="date").iloc[:-2]
+    database_df.to_sql(
+        "btc",
+        con=database_url,
+        if_exists="replace",
+        index=True,
+        index_label="date",
+    )
+
+    old_database = pd.read_sql("btc", con=database_url, index_col="date")
+    last_time = pd.to_datetime(old_database.index[-2]).timestamp() * 1000
+
+    ccxt_api = CcxtAPI(
+        "BTC/USDT",
+        "1d",
+        ccxt.binance(),
+        since=int(last_time),
+        verbose="Text",
+    )
+
+    new_data = ccxt_api.get_all_klines().to_OHLCV().data_frame
+    btc = new_data.combine_first(old_database).drop_duplicates()
+
+    btc.to_sql(
+        "btc",
+        con=database_url,
+        if_exists="replace",
+        index=True,
+        index_label="date",
+    )
+
+    return jsonify(
+        {"status": "success", "message": "Data updated successfully"}
+    )
+
+
 if __name__ == "__main__":
     app.run(host="0.0.0.0", port=2000, debug=True)
