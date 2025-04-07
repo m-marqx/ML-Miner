@@ -347,7 +347,7 @@ def get_account_balance_history():
     update = request.json.get("update", "false").lower() == "true"
 
     wallet_balance = get_account_balance(wallet, api_key, update)
-    wallet_df = wallet_data(wallet_balance, "WBTC", "USDT")
+    wallet_df = wallet_data(wallet_balance, "WBTC")
     wallet_df = process_balance(wallet_df, 33)
     wallet_df.index = wallet_df.index.strftime("%Y-%m-%d")
 
