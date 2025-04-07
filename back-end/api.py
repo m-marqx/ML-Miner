@@ -370,7 +370,7 @@ def get_account_balance_monthly():
     update = request.json.get("update", "false").lower() == "true"
 
     wallet_balance = get_account_balance(wallet, api_key, update)
-    wallet_df = wallet_data(wallet_balance, "WBTC", "USDT")
+    wallet_df = wallet_data(wallet_balance, "WBTC")
     wallet_df = process_balance(wallet_df, 33)
     wallet_df = (wallet_df.diff()).resample("M").sum() * 100
     wallet_df = wallet_df.iloc[:, :2].round(2)
