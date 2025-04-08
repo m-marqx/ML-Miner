@@ -427,5 +427,24 @@ def update_btc_data():
     )
 
 
+@app.route("/model/recommendations", methods=["GET"])
+def get_model_recommendations():
+    database_url = os.getenv("DATABASE_URL")
+
+    model_pipeline = ModelPipeline("btc", database_url=database_url)
+    recommendations = model_pipeline.get_model_recommendations()
+
+    recommendations.to_sql(
+        "model_recommendations",
+        con=database_url,
+        if_exists="replace",
+        index=True,
+        index_label="date",
+    )
+
+    return jsonify(
+        {"status": "success", "message": "Data updated successfully"}
+    )
+
 if __name__ == "__main__":
     app.run(host="0.0.0.0", port=2000, debug=True)
