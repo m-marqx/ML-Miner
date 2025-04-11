@@ -1,5 +1,4 @@
 import os
-import pathlib
 import json
 from ast import literal_eval
 
@@ -10,14 +9,16 @@ import pytz
 from datetime import datetime
 import klib
 from crypto_explorer import CcxtAPI, AccountAPI, MoralisAPI
+
 from flask import Flask, request, jsonify
 from flask_cors import CORS
+
 from machine_learning.model_builder import model_creation
 from machine_learning.ml_utils import DataHandler, get_recommendation
-
+from machine_learning.ml_pipeline import ModelPipeline
 
 app = Flask(__name__)
-# Configure CORS with specific origins instead of allowing all origins
+
 CORS(app, resources={r"/*": {
     "origins": ["http://localhost:3000"],
     "methods": ["GET", "POST", "OPTIONS"],
@@ -36,7 +37,7 @@ def add_cors_headers(response):
 
 @app.route("/update_price_data", methods=["GET"])
 def update_BTC_price_data():
-    database_url = os.getenv("TEST_DATABASE_URL")
+    database_url = os.getenv("DATABASE_URL")
     try:
         old_data = pd.read_sql("btc", con=database_url, index_col="date")
         last_time = pd.to_datetime(old_data.index[-3]).timestamp() * 1000
@@ -91,7 +92,7 @@ def create_model(configs_dataset, x, model_df):
 
 @app.route("/get_recommendations", methods=["GET"])
 def get_recommendations():
-    database_url = os.getenv("TEST_DATABASE_URL")
+    database_url = os.getenv("DATABASE_URL")
     price_data = pd.read_sql("btc", con=database_url, index_col="date")
     model_df = calculate_targets(price_data)
 
