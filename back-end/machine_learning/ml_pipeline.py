@@ -69,3 +69,39 @@ class ModelPipeline:
         )
 
         return model_results
+
+    def prepare_model(self):
+        """
+        Prepare and create a machine learning model using configurations
+        from environment variables. This method retrieves model 
+        configurations, features, and hyperparameters from environment
+        variables, combines them into a unified configuration series,
+        and passes them to the model creation function.
+
+        Returns
+        -------
+        object
+            The machine learning model created by the `create_model` 
+            method using the specified configurations and the model
+            dataframe.
+
+        Notes
+        -----
+        The method relies on environment variables with specific keys:
+        - "33139_configs": Contains general model configuration
+        - "33139_features": Contains feature parameters
+        - "33139_hyperparams": Contains model hyperparameters
+        """
+        ml_configs = literal_eval(json.loads(os.getenv("33139_configs")))
+        ml_features = {
+            "feat_parameters": json.loads(os.getenv("33139_features"))
+        }
+        ml_hyperparams = {
+            "hyperparameters": json.loads(os.getenv("33139_hyperparams"))
+        }
+
+        configs_series = pd.Series(
+            {**ml_features, **ml_hyperparams, **ml_configs}
+        )
+
+        return self.create_model(configs_series, self.model_df)
