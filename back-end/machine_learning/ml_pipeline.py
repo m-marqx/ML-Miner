@@ -11,7 +11,6 @@ import klib
 from machine_learning.model_builder import model_creation
 from machine_learning.ml_utils import DataHandler, get_recommendation
 
-
 class ModelPipeline:
     def __init__(self, table_name, database_url):
         btc = pd.read_sql(table_name, con=database_url, index_col="date")
@@ -105,3 +104,82 @@ class ModelPipeline:
         )
 
         return self.create_model(configs_series, self.model_df)
+
+    def get_model_recommendations(self, span_tag: bool = True):
+        """
+        Generate and format model recommendations with appropriate time
+        indexing. This method prepares a model, extracts prediction 
+        probabilities and positions, and formats the recommendations 
+        with proper timezone handling.  The last index is set to the 
+        current time, and may be highlighted in red if it  doesn't 
+        match the expected time format (20:59:59).
+
+        Parameters
+        ----------
+        span_tag : bool, default=True
+            Whether to add HTML span tags to the recommendation text 
+            for styling.
+
+        Returns
+        -------
+        pandas.Series
+            A series containing model recommendations indexed by 
+            formatted datetime strings in the 'America/Sao_Paulo' 
+            timezone. The index format is 'YYYY-MM-DD HH:MM:SS'.
+
+        Notes
+        -----
+        - The returned recommendations are indexed with timestamps 
+        ending at 23:59:59 UTC and then converted to 'America/Sao_Paulo'
+        timezone.
+
+        - If the last index doesn't have time 20:59:59, it will be 
+        highlighted in red using HTML span tags regardless of the 
+        `span_tag` parameter.
+        """
+        model = self.prepare_model()
+        recommendation_ml = model[["y_pred_probs", "Predict", "Position"]]
+
+        recommendations = get_recommendation(
+            recommendation_ml["Position"].loc["15-09-2024":],
+            add_span_tag=span_tag,
+        ).rename(f"model_33139")
+
+        recommendations.index = (
+            recommendations.index.tz_localize("UTC")
+            + pd.Timedelta(hours=23, minutes=59, seconds=59)
+        ).strftime("%Y-%m-%d %H:%M:%S")
+
+        last_index = pd.Timestamp(datetime.now(pytz.timezone("UTC"))).strftime(
+            "%Y-%m-%d %H:%M:%S"
+        )
+
+        recommendations.index = (
+            pd.DatetimeIndex(
+                recommendations.index[:-1].tolist() + [last_index]
+            )
+            .tz_localize("UTC")
+            .tz_convert("America/Sao_Paulo")
+        )
+
+        last_index_hour = recommendations.index[-1].hour
+        last_index_minute = recommendations.index[-1].minute
+        last_index_second = recommendations.index[-1].second
+
+        recommendations.index = recommendations.index.strftime(
+            "%Y-%m-%d %H:%M:%S"
+        )
+
+        if (
+            last_index_hour != 20
+            and last_index_minute != 59
+            and last_index_second != 59
+        ):
+            span_tag = "<span style='color: red'>"
+            close_span_tag = "</span>"
+            last_index = span_tag + recommendations.index[-1] + close_span_tag
+            recommendations.index = recommendations.index[:-1].tolist() + [
+                last_index
+            ]
+
+        return recommendations
