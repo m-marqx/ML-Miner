@@ -1,0 +1,87 @@
+services:
+  webpage:
+    image: ghcr.io/dirjusp/odin-system:stable
+    container_name: webpage
+    depends_on:
+      - api
+    ports:
+      - "3000:3000"
+
+  api:
+    image: ghcr.io/${{ github.repository_owner }}/ml-app-api:latest
+    container_name: API
+    ports:
+      - "2000:2000"
+    restart: unless-stopped
+
+  appDB:
+    image: postgres
+    container_name: appDB
+    environment:
+      - POSTGRES_USER=${databaseUser}
+      - POSTGRES_PASSWORD=${databasePassword}
+      - POSTGRES_DB=${databaseName}
+    restart: unless-stopped
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    ports:
+      - "0033:5432"
+
+  appDB-teste:
+    image: postgres
+    container_name: appDB-teste
+    environment:
+      - POSTGRES_USER=test
+      - POSTGRES_PASSWORD=test
+      - POSTGRES_DB=test
+    restart: unless-stopped
+    volumes:
+      - test_postgres_data:/var/lib/postgresql/data
+    ports:
+      - "0011:5432"
+
+  appDB-backup:
+    image: prodrigestivill/postgres-backup-local:latest
+    container_name: appDB-backup
+    restart: unless-stopped
+    volumes:
+      - C:/Users/mateu/Desktop/backups:/backups
+    environment:
+      - POSTGRES_HOST=appDB
+      - POSTGRES_USER=${databaseUser}
+      - POSTGRES_PASSWORD=${databasePassword}
+      - POSTGRES_DB=${databaseName}
+      - SCHEDULE=0 0 * * * *
+      - BACKUP_KEEP_DAYS=7
+      - BACKUP_KEEP_WEEKS=0
+      - BACKUP_KEEP_MONTHS=0
+    depends_on:
+      - appDB  # Updated to ensure correct dependency
+
+  watchtower:
+    image: containrrr/watchtower:latest
+    container_name: watchtower
+    environment:
+      - TZ=America/Rio_Branco
+      - WATCHTOWER_CLEANUP=true
+      - WATCHTOWER_INCLUDE_STOPPED=true
+      - WATCHTOWER_REVIVE_STOPPED=false
+      - WATCHTOWER_SCHEDULE=0 */5 * * * *
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+      - /home/ad-min/.docker/config.json:/config.json
+    restart: unless-stopped
+
+volumes:
+  postgres_data:
+    driver: local
+    driver_opts:
+      type: none
+      o: bind
+      device: C:/Repositories/ML-APP/back-end/data/db/prod
+  test_postgres_data:
+    driver: local
+    driver_opts:
+      type: none
+      o: bind
+      device: C:/Repositories/ML-APP/back-end/data/db/test
