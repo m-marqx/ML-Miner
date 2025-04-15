@@ -1,0 +1,95 @@
+services:
+  api:
+    build:
+      context: ./back-end
+      dockerfile: Dockerfile
+    container_name: api
+    environment:
+      - DATABASE_URL=${DATABASE_URL}
+      - 33139_hyperparams=%$${33139_hyperparams}
+      - 33139_features=$${33139_features}
+      - 33139_configs=$${33139_configs}
+    ports:
+      - "2000:2000"
+
+  webpage:
+    build:
+      context: ./front-end
+      dockerfile: Dockerfile
+    container_name: webpage
+    ports:
+      - "3000:3000"
+    depends_on:
+      - api
+
+  appDB:
+    image: postgres
+    container_name: appDB
+    environment:
+      - POSTGRES_USER=${databaseUser}
+      - POSTGRES_PASSWORD=${databasePassword}
+      - POSTGRES_DB=${databaseName}
+    restart: unless-stopped
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    ports:
+      - "0033:5432"
+
+  appDB-teste:
+    image: postgres
+    container_name: appDB-teste
+    environment:
+      - POSTGRES_USER=test
+      - POSTGRES_PASSWORD=test
+      - POSTGRES_DB=test
+    volumes:
+      - test_postgres_data:/var/lib/postgresql/data
+    restart: unless-stopped
+    ports:
+      - "0011:5432"
+
+  appDB-backup:
+    image: prodrigestivill/postgres-backup-local:latest
+    container_name: appDB-backup
+    restart: unless-stopped
+    volumes:
+      - C:/Users/mateu/Desktop/backups:/backups
+    environment:
+      - POSTGRES_HOST=appDB
+      - POSTGRES_USER=${databaseUser}
+      - POSTGRES_PASSWORD=${databasePassword}
+      - POSTGRES_DB=${databaseName}
+      - SCHEDULE=0 0 * * * *
+      - BACKUP_KEEP_DAYS=7
+      - BACKUP_KEEP_WEEKS=0
+      - BACKUP_KEEP_MONTHS=0
+    depends_on:
+      - appDB  # Updated to ensure correct dependency
+
+  watchtower:
+    image: containrrr/watchtower:latest
+    container_name: watchtower
+    environment:
+      - TZ=America/Rio_Branco
+      - WATCHTOWER_CLEANUP=true
+      - WATCHTOWER_INCLUDE_STOPPED=true
+      - WATCHTOWER_REVIVE_STOPPED=false
+      - WATCHTOWER_SCHEDULE=0 */5 * * * *
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+      - /home/ad-min/.docker/config.json:/config.json
+    restart: unless-stopped
+
+volumes:
+  postgres_data:
+    driver: local
+    driver_opts:
+      type: none
+      o: bind
+      device: C:/Repositories/ML-APP/back-end/data/db/prod
+  test_postgres_data:
+    driver: local
+    driver_opts:
+      type: none
+      o: bind
+      device: C:/Repositories/ML-APP/back-end/data/db/test
