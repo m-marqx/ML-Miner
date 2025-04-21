@@ -363,7 +363,6 @@ def get_account_balance_history():
 
     return response
 
-
 @app.route("/account/changes/month", methods=["POST"])
 def get_account_balance_monthly():
     api_key = request.json["api_key"]
@@ -385,6 +384,17 @@ def get_account_balance_monthly():
         )
 
     response = jsonify(wallet_df.to_dict())
+
+    if update:
+        database_url = os.getenv("DATABASE_URL")
+        wallet_df.to_sql(
+            "wallet_balance_monthly",
+            con=database_url,
+            if_exists="replace",
+            index=True,
+            index_label="date",
+        )
+
     response.headers.add("Content-Type", "application/json")
 
     return response
