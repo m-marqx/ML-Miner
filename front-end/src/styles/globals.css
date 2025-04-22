@@ -1,0 +1,95 @@
+:root {
+  --background-color: #0E0E11;
+  --main-color: #d87a16;
+  --text-color: #ffffffd9;
+  --card-color: #18181B;
+  --primary-color: #d87a16;
+  --accent-color: #F5DF92;
+  --pallete-color-50: #fefaec;
+  --pallete-color-100: #faf0cb;
+  --pallete-color-200: #f5df92;
+  --pallete-color-300: #f0ca59;
+  --pallete-color-400: #ecb433;
+  --pallete-color-500: #e5961b;
+  --pallete-color-600: #d87a16;
+  --pallete-color-700: #a85215;
+  --pallete-color-800: #894017;
+  --pallete-color-900: #713516;
+  --pallete-color-950: #401a08;
+
+
+  /* ag-grid table customization */
+  --ag-background-color: var(--card-color);
+  --ag-foreground-color: var(--text-color);
+  --ag-header-text-color: var(--text-color);
+  --ag-header-background-color: var(--main-color);
+  --ag-accent-color: var(--accent-color);
+  --ag-odd-row-background-color: var(--background-color);
+  --ag-header-column-resize-handle-color: var(--text-color);
+  --ag-font-size: 1rem;
+  --ag-row-height: 3rem;
+
+  /* appkit customization */
+  /* --wui-color-gray-glass-002: rgb(61, 32, 11, 0.25) !important; */
+  /* --wui-color-gray-glass-005: rgb(244, 230, 148, 0.15) !important; */
+}
+
+/* 1. Use a more-intuitive box-sizing model */
+*, *::before, *::after {
+  box-sizing: border-box;
+}
+
+/* 2. Remove default margin */
+* {
+  margin: 0;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial,
+      'Noto Sans', sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol',
+      'Noto Color Emoji';
+  font-weight: 400;
+}
+
+/* 3. Enable keyword animations */
+@media (prefers-reduced-motion: no-preference) {
+  html {
+    interpolate-size: allow-keywords;
+  }
+}
+
+body {
+  /* 4. Add accessible line-height */
+  line-height: 1.5;
+  font-weight: 400;
+  /* 5. Improve text rendering */
+  -webkit-font-smoothing: antialiased;
+}
+
+/* 6. Improve media defaults */
+img, picture, video, canvas, svg {
+  display: block;
+  max-width: 100%;
+}
+
+/* 7. Inherit fonts for form controls */
+input, button, textarea, select {
+  font: inherit;
+}
+
+/* 8. Avoid text overflows */
+p, h1, h2, h3, h4, h5, h6 {
+  overflow-wrap: break-word;
+}
+
+/* 9. Improve line wrapping */
+p {
+  text-wrap: pretty;
+}
+h1, h2, h3, h4, h5, h6 {
+  text-wrap: balance;
+}
+
+/*
+  10. Create a root stacking context
+*/
+#root, #__next {
+  isolation: isolate;
+}

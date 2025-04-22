@@ -1,0 +1,30 @@
+.main {
+    background: var(--background-color);
+    width: 100%;
+    height: 100vh;
+    color: var(--text-color);
+    display: grid;
+    grid-template-rows: 6svh 94svh;
+  }
+
+.web3Button {
+    display: grid;
+    align-items: center;
+    justify-items: center;
+    justify-content: end;
+}
+
+.navBar {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    padding: 0 2.7svw;
+    background-color: var(--card-color);
+    align-items: center;
+    height: 6svh;
+  }
+
+.navBar .logo {
+  height: 2.5rem;
+  width: 2.5rem;
+  border-radius: 100%;
+}
