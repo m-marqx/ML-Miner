@@ -198,6 +198,10 @@ h1, h2, h3, h4, h5, h6 {
   --radius-xl: calc(var(--radius) + 4px);
   --color-background: var(--background);
   --color-foreground: var(--foreground);
+  --color-primary-text-color: var(--primary-text-color);
+  --color-secondary-text-color: var(--secondary-text-color);
+  --color-tertiary-text-color: var(--tertiary-text-color);
+  --color-quaternary-text-color: var(--quaternary-text-color);
   --color-card: var(--card);
   --color-card-foreground: var(--card-foreground);
   --color-popover: var(--popover);
