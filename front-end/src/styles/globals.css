@@ -6,11 +6,12 @@
 :root {
   --background-color: #0E0E11;
   --main-color: #d87a16;
-  --text-color: #ffffffd9;
-  --primary-text-color: #ffffffd9;
-  --secondary-text-color: #ffffffa6;
-  --tertiary-text-color: #ffffff73;
-  --quaternary-text-color: #ffffff40;
+  --text-color: #ffffffd9; /* 85% */
+  --text-primary-foreground: #ffffffd9; /* 85% */
+  --primary-text-color: #ffffffd9; /* 85% */
+  --secondary-text-color: #ffffffa6; /* 65% */
+  --tertiary-text-color: #ffffff73; /* 45% */
+  --quaternary-text-color: #ffffff40; /* 25% */
   --primary-font-size: 1rem;
   --secondary-font-size: 0.875rem;
   --tertiary-font-size: 0.75rem;
