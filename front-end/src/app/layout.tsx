@@ -1,3 +1,4 @@
+import React from 'react';
 import type { Metadata } from 'next'
 import '@reown/appkit-wallet-button/react'
 import { headers } from 'next/headers'
@@ -20,7 +21,7 @@ export default async function RootLayout({
   const cookies = headersData.get('cookie');
   return (
     <html lang="en">
-      <body className={styles.main}>  
+      <body className={styles.main}>
         <ContextProvider cookies={cookies}>
           <div className={styles.navBar}>
             <div className={styles.logoContainer}>
@@ -36,7 +37,7 @@ export default async function RootLayout({
           </div>
           {children}
         </ContextProvider>
-    </body>
+      </body>
     </html>
   );
 }
