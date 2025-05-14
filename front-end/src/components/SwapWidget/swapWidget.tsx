@@ -159,10 +159,7 @@ export function SwapWidget() {
         abortControllerRef.current = controller;
         const { signal } = controller;
 
-        if (!srcToken || !destToken || !srcAmount) {
-            // setDebugMessage("Please fill all fields");
-            return;
-        }
+        if (!srcToken || !destToken || !srcAmount) return;
 
         const symbolSrc = srcToken === "POL" ? "MATIC" : srcToken;
         const symbolDest = destToken === "POL" ? "MATIC" : destToken;
@@ -171,12 +168,8 @@ export function SwapWidget() {
         srcTokenData.address = srcTokenData.extensions.bridgeInfo["137"].tokenAddress
         const destTokenData = await getTokenBySymbol(symbolDest);
         destTokenData.address = destTokenData.extensions.bridgeInfo["137"].tokenAddress
-        if (!srcTokenData || !destTokenData) {
-            // setDebugMessage(`Token ${srcToken} or ${destToken} not found`);
-            return;
-        } else {
-            // setDebugMessage(null);
-        }
+
+        if (!srcTokenData || !destTokenData) return;
 
         // Determine decimals and formatted amount
         const srcTokenDecimals = srcTokenData.decimals;
@@ -293,22 +286,14 @@ export function SwapWidget() {
         abortControllerRef.current = controller;
         const { signal } = controller;
 
-        if (!srcToken || !destToken || !destAmount || !srcAmount) {
-            // setDebugMessage("Please fill all fields");
-            return;
-        }
+        if (!srcToken || !destToken || !destAmount || !srcAmount) return;
 
         const symbolSrc = srcToken === "POL" ? "MATIC" : srcToken;
         const symbolDest = destToken === "POL" ? "MATIC" : destToken;
 
         const srcTokenData = await getTokenBySymbol(symbolSrc);
         const destTokenData = await getTokenBySymbol(symbolDest);
-        if (!srcTokenData || !destTokenData) {
-            // setDebugMessage(`Token ${srcToken} or ${destToken} not found`);
-            return;
-        } else {
-            // setDebugMessage(null);
-        }
+        if (!srcTokenData || !destTokenData) return;
 
         // Determine decimals and formatted amount
         const srcTokenDecimals = srcTokenData.decimals;
@@ -500,6 +485,7 @@ export function SwapWidget() {
 
     useEffect(() => {
         if (!walletAddress || !srcToken || !destToken) return;
+
         if (lastInputChange === "src") {
             fetchSwapDataSell();
         } else {
