@@ -176,7 +176,7 @@ export default function Graph({
           },
         ],
         backgroundColor: chartBgColor,
-      } as echarts.EChartOption;
+      } as echarts.EChartsOption;
 
       const chart = echarts.init(chartRef.current, 'dark');
       chart.setOption({ ...options, animation: animation });
