@@ -2,12 +2,25 @@
 
 import React from "react";
 
+import { useEffect } from "react";
 import { SwapWidget } from "@/src/components/SwapWidget/swapWidget";
 import { useAccount } from 'wagmi'
 import Squares from "@/blocks/Backgrounds/Squares/Squares"
+import { useAppKit } from "@reown/appkit/react";
 
 export default function Home() {
     const { address: walletAddress } = useAccount();
+    const { open } = useAppKit();
+
+    useEffect(() => {
+        if (!walletAddress) {
+            open({ view: "Connect" });
+        }
+    }, [walletAddress, open]);
+
+    if (!walletAddress) {
+        return null;
+    }
 
     return (
         <div className="relative w-full h-full">
