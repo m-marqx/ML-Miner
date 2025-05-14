@@ -13,6 +13,9 @@ export default function NavBar() {
             <Link href="/swap" className={pathname === '/swap' ? styles.active : ''}>
                 swap
             </Link>
+            <Link href="/result" className={pathname === '/result' ? styles.active : ''}>
+                result
+            </Link>
         </div>
     );
 }
