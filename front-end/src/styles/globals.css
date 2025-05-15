@@ -7,6 +7,7 @@
   --background-color: #0E0E11;
   --main-color: #d87a16;
   --text-color: #ffffffd9; /* 85% */
+  --dark-text-color: #000000d9;
   --text-primary-foreground: #ffffffd9; /* 85% */
   --primary-text-color: #ffffffd9; /* 85% */
   --secondary-text-color: #ffffffa6; /* 65% */
@@ -33,12 +34,12 @@
 
   /* ag-grid table customization */
   --ag-background-color: var(--card-color);
-  --ag-foreground-color: var(--text-color);
-  --ag-header-text-color: var(--text-color);
+  --ag-foreground-color: var(--dark-text-color);
+  --ag-header-text-color: var(--dark-text-color);
   --ag-header-background-color: var(--main-color);
   --ag-accent-color: var(--accent-color);
   --ag-odd-row-background-color: var(--background-color);
-  --ag-header-column-resize-handle-color: var(--text-color);
+  --ag-header-column-resize-handle-color: var(--dark-text-color);
   --ag-font-size: 1rem;
   --ag-row-height: 3rem;
 
