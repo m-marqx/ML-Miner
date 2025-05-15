@@ -6,6 +6,9 @@ import { config } from "../WalletConnect/config/appkit";
 import { sendTransaction } from "@wagmi/core";
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
 
+import { useAppKit } from "@reown/appkit/react";
+import { useAccount } from 'wagmi'
+
 import axios from "axios";
 import { getAccount, getBalance, estimateGas } from "@wagmi/core";
 import Image from "next/image";
@@ -106,11 +109,11 @@ export function SwapWidget() {
 
     const [srcToken, setSrcToken] = useState<string>("WBTC");
     const [destToken, setDestToken] = useState<string>("USDT");
-    const [srcTokenImage, setSrcTokenImage] = useState<string | null>();
-    const [destTokenImage, setDestTokenImage] = useState<string | null>();
+    const [srcTokenImage, setSrcTokenImage] = useState<string | null>("https://raw.githubusercontent.com/trustwallet/assets/master/blockchains/ethereum/assets/0x2260FAC5E5542a773Aa44fBCfeDf7C193bc2C599/logo.png");
+    const [destTokenImage, setDestTokenImage] = useState<string | null>("https://raw.githubusercontent.com/trustwallet/assets/master/blockchains/ethereum/assets/0xdAC17F958D2ee523a2206206994597C13D831ec7/logo.png");
     const [srcBalanceValue, setSrcBalanceValue] = useState<string>("");
     const [destBalanceValue, setDestBalanceValue] = useState<string>("");
-    const [srcAmount, setAmount] = useState<string | null>("0.0003");
+    const [srcAmount, setAmount] = useState<string | null>("1");
     const [destAmount, setDestAmount] = useState<string | undefined | null>(null);
     const [isValid, setIsValid] = useState<boolean>(false);
     const [secondsToNextFetch, setSecondsToNextFetch] = useState<number | null>(null);
@@ -150,6 +153,20 @@ export function SwapWidget() {
 
     const account = getAccount(config);
     const walletAddress = account.address!;
+
+    const { address: walletAccount } = useAccount();
+    const { open } = useAppKit();
+
+    const ConnectWalletButton = (
+        <Button
+            className="bg-main-color w-full rounded-3xl h-full"
+            onClick={() => {
+                open({ view: "Connect" });
+            }}
+        >
+            <span className="text-large-size text-[#000000a6] font-semibold">Connect Wallet</span>
+        </Button>
+    )
 
     const abortControllerRef = useRef<AbortController | null>(null);
 
@@ -1000,6 +1017,32 @@ export function SwapWidget() {
         </div>
     )
 
+    const swapButtons = (
+        <div className="grid grid-cols-1 grid-rows-2 w-full gap-4">
+            {swapAlertDialog()}
+            <div className="grid grid-cols-2 gap-2">
+                <Button
+                    variant="outline"
+                    className="rounded-none rounded-l-2xl bg-transparent hover:bg-[#f75c2a27] border-l border-solid border-[#f75c2a] w-full"
+                    onClick={paraswapSwap}
+                    // disabled={!isValid || loading}
+                    disabled={!paraSwapData}
+                >
+                    Swap <span className="text-[#f75c2a] font-semibold">Velora</span>
+                </Button>
+                <Button
+                    variant="outline"
+                    className="rounded-none rounded-r-2xl bg-transparent hover:bg-[#31cb9e27] border-solid border-[#31cb9e] w-full"
+                    onClick={kyberswapSwap}
+                    // disabled={!isValid || loading}
+                    disabled={!kyberSwapData}
+                >
+                    Swap with <span className="text-[#31cb9e] font-semibold">Kyber</span>
+                </Button>
+            </div>
+        </div>
+    );
+
     return (
         <Card className="bg-card-color text-text-color rounded-[1rem]">
             <CardHeader>
@@ -1025,29 +1068,7 @@ export function SwapWidget() {
                 </div>
             </CardContent>
             <CardFooter>
-                <div className="grid grid-cols-1 grid-rows-2 w-full gap-4">
-                    {swapAlertDialog()}
-                    <div className="grid grid-cols-2 gap-2">
-                        <Button
-                            variant="outline"
-                            className="rounded-none rounded-l-2xl bg-transparent hover:bg-[#f75c2a27] border-l border-solid border-[#f75c2a] w-full"
-                            onClick={paraswapSwap}
-                            // disabled={!isValid || loading}
-                            disabled={!paraSwapData}
-                        >
-                            Swap <span className="text-[#f75c2a] font-semibold">Velora</span>
-                        </Button>
-                        <Button
-                            variant="outline"
-                            className="rounded-none rounded-r-2xl bg-transparent hover:bg-[#31cb9e27] border-solid border-[#31cb9e] w-full"
-                            onClick={kyberswapSwap}
-                            // disabled={!isValid || loading}
-                            disabled={!kyberSwapData}
-                        >
-                            Swap with <span className="text-[#31cb9e] font-semibold">Kyber</span>
-                        </Button>
-                    </div>
-                </div>
+                {!walletAccount  ? ConnectWalletButton : swapButtons}
             </CardFooter>
         </Card>
     );

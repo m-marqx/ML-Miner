@@ -6,8 +6,6 @@ import { useEffect, useState, useCallback } from "react";
 import { SwapWidget } from "@/src/components/SwapWidget/swapWidget";
 import { useAccount } from 'wagmi'
 import Squares from "@/blocks/Backgrounds/Squares/Squares"
-import { useAppKit } from "@reown/appkit/react";
-import { Button } from "@/components/ui/button";
 import AgGridClient from "@/src/components/Table/AgGridClient";
 
 interface ModelRecommendation {
@@ -49,13 +47,6 @@ export default function Home() {
     }, [fetchTableData]);
 
     const { address: walletAddress } = useAccount();
-    const { open } = useAppKit();
-
-    useEffect(() => {
-        if (!walletAddress) {
-            open({ view: "Connect" });
-        }
-    }, [walletAddress, open]);
 
     if (!walletAddress) {
         return (
@@ -65,8 +56,11 @@ export default function Home() {
                     squareSize={56}
                     borderColor='#71717a40'
                 />
-                <div className="flex justify-center relative z-10" >
-                    <Button onClick={() => open({ view: "Connect" })}>Connect Wallet</Button>
+                <div className="grid grid-cols-[1fr_2fr] h-[calc(100%-2rem)] gap-[3.4svw] m-[3svh_2.7svw] justify-center relative z-10" >
+                    <div></div>
+                    <div className="w-140">
+                        <SwapWidget />
+                    </div>
                 </div>
             </div>
         )
@@ -90,11 +84,7 @@ export default function Home() {
                     )}
                 </div>
                 <div className="w-140">
-                    {walletAddress ? (
-                        <SwapWidget />
-                    ) : (
-                        <div>Please connect your wallet</div>
-                    )}
+                    <SwapWidget />
                 </div>
             </div>
         </div>
