@@ -10,11 +10,11 @@ export default function NavBar() {
 
     return (
         <div className={styles.navLinks}>
-            <Link href="/swap" className={pathname === '/swap' ? styles.active : ''}>
-                swap
-            </Link>
             <Link href="/result" className={pathname === '/result' ? styles.active : ''}>
                 result
+            </Link>
+            <Link href="/swap" className={pathname === '/swap' ? styles.active : ''}>
+                swap
             </Link>
         </div>
     );
