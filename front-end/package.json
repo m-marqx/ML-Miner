@@ -32,6 +32,7 @@
     "@reown/appkit-wallet-button": "^1.7.1",
     "@reown/walletkit": "^1.2.3",
     "@tanstack/react-query": "^5.74.0",
+    "@tanstack/react-table": "^8.21.3",
     "@wagmi/core": "^2.16.7",
     "@walletconnect/core": "^2.19.2",
     "ag-grid-community": "^33.2.1",
