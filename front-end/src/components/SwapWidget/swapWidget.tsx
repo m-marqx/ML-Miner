@@ -595,6 +595,13 @@ export function SwapWidget() {
         }
     }, [swapData, gasCost, gasCostCallback]);
 
+    useEffect(() => {
+        if (textColor !== "text-white") {
+            setTimeout(() => {
+                setTextColor("text-white")
+            }, 800)
+        }
+    }, [textColor])
 
     const handleSwapData = () => {
         if (!kyberSwapData || !paraSwapData) return;
@@ -868,14 +875,6 @@ export function SwapWidget() {
 
     const staticTextInputClass = `min-w-0 outline-none text-huge-size font-semibold h-11 no-spinner ${isValid ? "text-white/65" : "text-[#FF593C]"}`
     const dynamicTextInputClass = `min-w-0 outline-none text-huge-size font-semibold h-11 no-spinner transition-colors duration-200 ${textColor}`
-
-    useEffect(() => {
-        if (textColor !== "text-white") {
-            setTimeout(() => {
-                setTextColor("text-white")
-            }, 800)
-        }
-    }, [textColor])
 
     const swapTokensButton = (
         <button
