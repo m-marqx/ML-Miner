@@ -74,16 +74,8 @@ export default function Home() {
                 borderColor='#71717a40'
             />
             <div className="grid grid-cols-[1fr_2fr] h-[calc(100%-2rem)] gap-[3.4svw] m-[3svh_2.7svw] justify-center relative z-10" >
-                <div className="pb-6">
-                    {tableLoading ? (
-                        <div>Loading table data...</div>
-                    ) : tableData.length > 0 ? (
-                        <AgGridClient rowData={tableData} />
-                    ) : (
-                        <div>No table data available</div>
-                    )}
-                </div>
-                <div className="w-140">
+                <div></div>
+                <div className="w-full">
                     <SwapWidget />
                 </div>
             </div>

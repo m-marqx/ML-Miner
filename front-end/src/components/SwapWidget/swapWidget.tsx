@@ -137,14 +137,20 @@ export function SwapWidget() {
     const [srcRate, setSrcRate] = useState<string | undefined>(undefined);
     const [destRate, setDestRate] = useState<string | undefined>(undefined);
     const [isSrcRate, setIsSrcRate] = useState<boolean>(true);
-    const [slippage, setSlippage] = useState<number>(50);
+    const [slippage, setSlippage] = useState<number>(0.50);
+    const slippageRef = useRef<number>(0.50);
 
-    // whenever `srcAmount` changes we push it back into the DOM
     useEffect(() => {
         if (srcInputRef.current) {
             srcInputRef.current.value = srcAmount ?? "";
         }
     }, [srcAmount]);
+
+    useEffect(() => {
+        if (slippageRef.current) {
+            slippageRef.current = slippage * 100;
+        }
+    }, [slippage]);
 
     useEffect(() => {
         if (destInputRef.current) {
@@ -241,7 +247,7 @@ export function SwapWidget() {
             );
             paraswapUrl.searchParams.append("amount", formattedSrcAmount);
             paraswapUrl.searchParams.append("userAddress", walletAddress);
-            paraswapUrl.searchParams.append("slippage", slippage.toString());
+            paraswapUrl.searchParams.append("slippage", slippageRef.toString());
             paraswapUrl.searchParams.append("network", "137");
             paraswapUrl.searchParams.append("side", "SELL");
 
@@ -271,7 +277,7 @@ export function SwapWidget() {
 
             const kyberPayload = {
                 ...routeSummary,
-                slippageTolerance: slippage,
+                slippageTolerance: slippageRef,
                 sender: walletAddress,
                 recipient: walletAddress,
                 source: "ArchieMarqx",
@@ -360,7 +366,7 @@ export function SwapWidget() {
             paraswapUrl.searchParams.append("amount", formattedDestAmount);
             paraswapUrl.searchParams.append("userAddress", walletAddress);
 
-            paraswapUrl.searchParams.append("slippage", "50");
+            paraswapUrl.searchParams.append("slippage", slippageRef.toString());
             paraswapUrl.searchParams.append("network", "137");
             paraswapUrl.searchParams.append("side", "SELL");
 
@@ -390,7 +396,7 @@ export function SwapWidget() {
 
             const kyberPayload = {
                 ...routeSummary,
-                slippageTolerance: 50,
+                slippageTolerance: slippageRef,
                 sender: walletAddress,
                 recipient: walletAddress,
                 source: "ArchieMarqx",
@@ -750,7 +756,9 @@ export function SwapWidget() {
                             <input
                                 type="number"
                                 className="min-w-0 outline-none text-huge-size font-semibold h-11 no-spinner text-white/65"
-                                defaultValue={50}
+                                defaultValue={0.5}
+                                step={0.1}
+                                min={0.1}
                                 onChange={(e) => {
                                     const value = parseFloat(e.target.value);
                                     if (value >= 0 && value <= 100) {
@@ -1086,23 +1094,25 @@ export function SwapWidget() {
     );
 
     return (
-        <Card className="bg-card-color text-text-color rounded-[1rem]">
-            <CardHeader>
-                <CardTitle className="flex justify-between items-end">
-                    <span className="text-big-size font-semibold">Swap</span>
-                    {settingsDialog()}
-                </CardTitle>
-            </CardHeader>
-            <CardContent>
-                <div className="grid grid-rows-2 gap-2 relative">
-                    {srcTokenContainer}
-                    {swapTokensButton}
-                    {destTokenContainer}
-                </div>
-            </CardContent>
-            <CardFooter>
-                {!walletAccount  ? ConnectWalletButton : swapButtons}
-            </CardFooter>
-        </Card>
+        <div className="grid grid-cols-2 w-full gap-4">
+            <Card className="bg-card-color text-text-color rounded-[1rem] w-full h-fit">
+                <CardHeader>
+                    <CardTitle className="flex justify-between items-end">
+                        <span className="text-big-size font-semibold">Swap</span>
+                        {settingsDialog()}
+                    </CardTitle>
+                </CardHeader>
+                <CardContent>
+                    <div className="grid grid-rows-2 gap-2 relative">
+                        {srcTokenContainer}
+                        {swapTokensButton}
+                        {destTokenContainer}
+                    </div>
+                </CardContent>
+                <CardFooter>
+                    {!walletAccount  ? ConnectWalletButton : swapButtons}
+                </CardFooter>
+            </Card>
+        </div>
     );
 }
