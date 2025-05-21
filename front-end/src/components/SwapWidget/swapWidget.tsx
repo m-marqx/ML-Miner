@@ -137,6 +137,7 @@ export function SwapWidget() {
     const [srcRate, setSrcRate] = useState<string | undefined>(undefined);
     const [destRate, setDestRate] = useState<string | undefined>(undefined);
     const [isSrcRate, setIsSrcRate] = useState<boolean>(true);
+    const [slippage, setSlippage] = useState<number>(50);
 
     // whenever `srcAmount` changes we push it back into the DOM
     useEffect(() => {
@@ -240,7 +241,7 @@ export function SwapWidget() {
             );
             paraswapUrl.searchParams.append("amount", formattedSrcAmount);
             paraswapUrl.searchParams.append("userAddress", walletAddress);
-            paraswapUrl.searchParams.append("slippage", "50");
+            paraswapUrl.searchParams.append("slippage", slippage.toString());
             paraswapUrl.searchParams.append("network", "137");
             paraswapUrl.searchParams.append("side", "SELL");
 
@@ -270,7 +271,7 @@ export function SwapWidget() {
 
             const kyberPayload = {
                 ...routeSummary,
-                slippageTolerance: 50,
+                slippageTolerance: slippage,
                 sender: walletAddress,
                 recipient: walletAddress,
                 source: "ArchieMarqx",
@@ -722,6 +723,48 @@ export function SwapWidget() {
         );
     }
 
+    const settingsDialog = () => {
+        return (
+            <Dialog>
+                <DialogTrigger asChild>
+                    <button>
+                        <Image
+                            src={"/icons/gear.svg"}
+                            alt="settings"
+                            width={32}
+                            height={32}
+                            className="opacity-45 w-8 h-8 cursor-pointer"
+                        />
+                    </button>
+                </DialogTrigger>
+                <DialogContent className="w-[388px] flex flex-col h-fit p-4 bg-zinc-900/65 border border-zinc-800 border-solid backgroud-blur">
+                    <DialogHeader>
+                        <div className="gap-2 flex flex-col p-none">
+                            <DialogTitle className="text-tertiary-text-color text-large-size font-semibold">{`Trading Parameters`}</DialogTitle>
+                        </div>
+                    </DialogHeader>
+                    <hr />
+                    <div>
+                        <div className="text-primary-text-color">
+                            Max slippage:
+                            <input
+                                type="number"
+                                className="min-w-0 outline-none text-huge-size font-semibold h-11 no-spinner text-white/65"
+                                defaultValue={50}
+                                onChange={(e) => {
+                                    const value = parseFloat(e.target.value);
+                                    if (value >= 0 && value <= 100) {
+                                        setSlippage(value);
+                                    }
+                                }}
+                            />
+                        </div>
+                    </div>
+                </DialogContent>
+            </Dialog>
+        );
+    }
+
     const srcTokenButton = () => {
         return (
             <div>
@@ -1047,16 +1090,7 @@ export function SwapWidget() {
             <CardHeader>
                 <CardTitle className="flex justify-between items-end">
                     <span className="text-big-size font-semibold">Swap</span>
-                    <Image
-                        src={"/icons/gear.svg"}
-                        alt="Ícone"
-                        width={32}
-                        height={32}
-                        className="opacity-45 w-8 h-8 cursor-pointer"
-                        onClick={() => {
-                            console.log("Settings clicked");
-                        }}
-                    />
+                    {settingsDialog()}
                 </CardTitle>
             </CardHeader>
             <CardContent>
