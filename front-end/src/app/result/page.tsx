@@ -4,6 +4,12 @@ import React from "react";
 import { useEffect, useState, useCallback } from "react";
 import styles from "./page.module.css";
 import Graph, { type GraphProps } from "../../components/BarGraph/Graph";
+import TableData from "@/src/components/DataTable/AiTable";
+
+interface ModelRecommendation {
+    date: string | null;
+    model_33139: string | null;
+}
 
 export default function Home() {
   const [isLoading, setIsLoading] = useState(true);
@@ -11,6 +17,37 @@ export default function Home() {
   const [btcYValues, setBtcYValues] = useState<number[]>([]);
   const [modelXValues, setModelXValues] = useState<string[]>([]);
   const [modelYValues, setModelYValues] = useState<number[]>([]);
+  const [tableData, setTableData] = useState<ModelRecommendation[]>([]);
+  const [tableLoading, setTableLoading] = useState(true);
+
+  const fetchTableData = useCallback(async () => {
+      try {
+          setTableLoading(true);
+          const response = await fetch("/api/tableData");
+
+          if (!response.ok) {
+              throw new Error("Failed to fetch table data");
+          }
+
+          const result = await response.json();
+          setTableData(result.data || []);
+      } catch (error) {
+          console.error("Error fetching table data:", error);
+      } finally {
+          setTableLoading(false);
+      }
+  }, []);
+
+  useEffect(() => {
+      fetchTableData();
+      const intervalId: NodeJS.Timeout | null = null;
+
+      return () => {
+          if (intervalId) {
+              clearInterval(intervalId);
+          }
+      };
+  }, [fetchTableData]);
 
   const fetchChartData = useCallback(async () => {
     try {
@@ -181,7 +218,17 @@ export default function Home() {
           <Graph {...BtcGraphConfig} />
         </div>
       </div>
-      {monthly_summary}
+      <div className="grid grid-cols-1 content-between my-[3svh]">
+          {tableLoading ? (
+              <div>Loading table data...</div>
+        ) : tableData.length > 0 ? (
+            <div className="h-[calc(91svh-2rem)]">
+              <TableData />
+            </div>
+          ) : (
+              <div>No table data available</div>
+          )}
+      </div>
     </div>
   );
 }
