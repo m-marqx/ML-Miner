@@ -247,7 +247,7 @@ export function SwapWidget() {
             );
             paraswapUrl.searchParams.append("amount", formattedSrcAmount);
             paraswapUrl.searchParams.append("userAddress", walletAddress);
-            paraswapUrl.searchParams.append("slippage", slippageRef.toString());
+            paraswapUrl.searchParams.append("slippage", slippageRef.current.toString());
             paraswapUrl.searchParams.append("network", "137");
             paraswapUrl.searchParams.append("side", "SELL");
 
@@ -277,7 +277,7 @@ export function SwapWidget() {
 
             const kyberPayload = {
                 ...routeSummary,
-                slippageTolerance: slippageRef,
+                slippageTolerance: slippageRef.current,
                 sender: walletAddress,
                 recipient: walletAddress,
                 source: "ArchieMarqx",
@@ -366,7 +366,7 @@ export function SwapWidget() {
             paraswapUrl.searchParams.append("amount", formattedDestAmount);
             paraswapUrl.searchParams.append("userAddress", walletAddress);
 
-            paraswapUrl.searchParams.append("slippage", slippageRef.toString());
+            paraswapUrl.searchParams.append("slippage", slippageRef.current.toString());
             paraswapUrl.searchParams.append("network", "137");
             paraswapUrl.searchParams.append("side", "SELL");
 
@@ -396,7 +396,7 @@ export function SwapWidget() {
 
             const kyberPayload = {
                 ...routeSummary,
-                slippageTolerance: slippageRef,
+                slippageTolerance: slippageRef.current,
                 sender: walletAddress,
                 recipient: walletAddress,
                 source: "ArchieMarqx",
@@ -1094,7 +1094,7 @@ export function SwapWidget() {
     );
 
     return (
-        <div className="grid grid-cols-2 w-full gap-4">
+        <div className="flex flex-cols w-140 gap-4 justify-center">
             <Card className="bg-card-color text-text-color rounded-[1rem] w-full h-fit">
                 <CardHeader>
                     <CardTitle className="flex justify-between items-end">
