@@ -4,7 +4,7 @@ import React from "react";
 import { useEffect, useState, useCallback } from "react";
 import styles from "./page.module.css";
 import Graph, { type GraphProps } from "../../components/BarGraph/Graph";
-import TableData from "@/src/components/DataTable/AiTable";
+import TableData from "@/src/components/Table/ModelTable";
 
 interface ModelRecommendation {
     date: string | null;
