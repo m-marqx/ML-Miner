@@ -21,32 +21,32 @@ export default function Home() {
   const [tableLoading, setTableLoading] = useState(true);
 
   const fetchTableData = useCallback(async () => {
-      try {
-          setTableLoading(true);
-          const response = await fetch("/api/tableData");
+    try {
+      setTableLoading(true);
+      const response = await fetch("/api/tableData");
 
-          if (!response.ok) {
-              throw new Error("Failed to fetch table data");
-          }
-
-          const result = await response.json();
-          setTableData(result.data || []);
-      } catch (error) {
-          console.error("Error fetching table data:", error);
-      } finally {
-          setTableLoading(false);
+      if (!response.ok) {
+        throw new Error("Failed to fetch table data");
       }
+
+      const result = await response.json();
+      setTableData(result.data || []);
+    } catch (error) {
+      console.error("Error fetching table data:", error);
+    } finally {
+      setTableLoading(false);
+    }
   }, []);
 
   useEffect(() => {
-      fetchTableData();
-      const intervalId: NodeJS.Timeout | null = null;
+    fetchTableData();
+    const intervalId: NodeJS.Timeout | null = null;
 
-      return () => {
-          if (intervalId) {
-              clearInterval(intervalId);
-          }
-      };
+    return () => {
+      if (intervalId) {
+        clearInterval(intervalId);
+      }
+    };
   }, [fetchTableData]);
 
   const fetchChartData = useCallback(async () => {
@@ -156,7 +156,6 @@ export default function Home() {
     className: styles.graph,
   };
 
-
   return (
     <div className={styles.main}>
       <div className="grid grid-cols-1 content-between my-[3svh]">
@@ -168,15 +167,15 @@ export default function Home() {
         </div>
       </div>
       <div className="grid grid-cols-1 content-between my-[3svh]">
-          {tableLoading ? (
-              <div>Loading table data...</div>
+        {tableLoading ? (
+          <div>Loading table data...</div>
         ) : tableData.length > 0 ? (
-            <div className="h-[calc(91svh-2rem)]">
-              <TableData />
-            </div>
-          ) : (
-              <div>No table data available</div>
-          )}
+          <div className="h-[calc(91svh-2rem)]">
+            <TableData />
+          </div>
+        ) : (
+          <div>No table data available</div>
+        )}
       </div>
     </div>
   );
