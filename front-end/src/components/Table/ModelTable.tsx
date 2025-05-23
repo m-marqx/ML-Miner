@@ -35,7 +35,9 @@ import {
     SelectTrigger,
     SelectValue,
 } from "@/components/ui/select"
-import parse from "html-react-parser"
+
+import { Badge } from "@/components/ui/badge"
+
 import {
     Table,
     TableBody,
@@ -50,27 +52,62 @@ type TableData = {
     model_33139: string
 }
 
-
 const columns: ColumnDef<TableData>[] = [
     {
         header: "Date",
         accessorKey: "date",
-        size: 180,
-        cell: ({ row }) => (
-            <div className="font-medium">{row.getValue("date")}</div>
-        ),
+        size: 120,
+        cell: ({ row }) => {
+            const value = row.getValue("date") as string
+            const date = new Date(value)
+            const formattedDate = date.toLocaleDateString("en-US", {
+                year: "numeric",
+                month: "short",
+                day: "2-digit",
+            })
+            const isDifferentTime = date.getHours() !== 20 || date.getMinutes() !== 59 || date.getSeconds() !== 59
+            if (isDifferentTime) {
+                return (
+                    <div className="text-[#f0d25d] font-semibold">
+                        {formattedDate} (Pending)
+                    </div>
+                )
+            }
+            return <div className="font-semibold">{formattedDate}</div>
+        },
     },
     {
-        header: "Model 33139",
-        accessorKey: "model_33139",
-        size: 400,
+        header: "Position",
+        accessorKey: "position",
+        size: 60,
         cell: ({ row }) => {
-            const value = row.getValue("model_33139") as string
-            return (
-                <div>
-                    {parse(value)}
-                </div>
-            )
+            const value = row.getValue("position") as string
+            return value[0] === "—" ? "" : value
+        },
+    },
+    {
+        header: "Side",
+        accessorKey: "side",
+        size: 60,
+        cell: ({ row }) => {
+            const value = row.getValue("side") as string
+            let rowValue = <div>{value}</div>
+
+            if (value === "Open Position") {
+                rowValue = <Badge variant="default" className="bg-[#00e676] text-black/85 font-semibold">{value}</Badge>
+            } else if (value === "Close Position") {
+                rowValue = <Badge variant="default" className="bg-[#ef5350] text-black/85 font-semibold">{value}</Badge>
+            }
+            return rowValue
+        },
+    },
+    {
+        header: "Capital",
+        accessorKey: "capital",
+        size: 60,
+        cell: ({ row }) => {
+            const value = row.getValue("capital") as string
+            return value
         },
     },
 ]
@@ -124,11 +161,11 @@ export default function TableData() {
     return (
         <div className="flex flex-col h-full">
             <div className="bg-background rounded-md border flex-1 min-h-0 flex flex-col">
-                <div className="flex-1 min-h-0 overflow-y-auto">
+                <div className="flex-1 min-h-0 overflow-y-auto rounded-md">
                     <Table>
-                        <TableHeader>
+                        <TableHeader className="text-center rounded-md">
                             {table.getHeaderGroups().map((headerGroup) => (
-                                <TableRow key={headerGroup.id} className="bg-zinc-800 hover:bg-zinc-800">
+                                <TableRow key={headerGroup.id} className="bg-zinc-800 hover:bg-zinc-800 rounded-md">
                                     {headerGroup.headers.map((header) => {
                                         return (
                                             <TableHead
@@ -140,7 +177,7 @@ export default function TableData() {
                                                     <div
                                                         className={cn(
                                                             header.column.getCanSort() &&
-                                                            "flex h-full cursor-pointer items-center justify-between gap-2 select-none text-white/85"
+                                                            "flex h-full cursor-pointer items-center justify-center gap-2 select-none text-white/85"
                                                         )}
                                                         onClick={header.column.getToggleSortingHandler()}
                                                         onKeyDown={(e) => {
@@ -197,7 +234,7 @@ export default function TableData() {
                                         className="hover:bg-zinc-800"
                                     >
                                         {row.getVisibleCells().map((cell) => (
-                                            <TableCell key={cell.id}>
+                                            <TableCell key={cell.id} className="text-center">
                                                 {flexRender(
                                                     cell.column.columnDef.cell,
                                                     cell.getContext()
@@ -225,7 +262,7 @@ export default function TableData() {
             <div className="flex items-center justify-between gap-3 max-sm:flex-col mt-4">
                 {/* Page number information */}
                 <span
-                    className="text-muted-foreground flex-1 text-sm whitespace-nowrap"
+                    className="text-white/65 flex-1 text-sm whitespace-nowrap"
                     aria-live="polite"
                 >
                     Page {table.getState().pagination.pageIndex + 1} of {table.getPageCount()}
@@ -309,7 +346,7 @@ export default function TableData() {
                         >
                         <SelectTrigger
                             id="results-per-page"
-                            className="w-fit whitespace-nowrap text-muted-foreground"
+                            className="w-fit whitespace-nowrap text-white/65"
                         >
                             <SelectValue placeholder="Select number of results" />
                         </SelectTrigger>

@@ -103,6 +103,9 @@ export const btc = pgTable("btc", {
 export const modelRecommendations = pgTable("model_recommendations", {
 	date: text("date"),
 	model_33139: text("model_33139"),
+	position: text("position"),
+	side: text("side"),
+	capital: text("capital"),
 },
 	(table) => {
 		return {
