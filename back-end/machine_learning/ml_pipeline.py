@@ -162,24 +162,8 @@ class ModelPipeline:
             .tz_convert("America/Sao_Paulo")
         )
 
-        last_index_hour = recommendations.index[-1].hour
-        last_index_minute = recommendations.index[-1].minute
-        last_index_second = recommendations.index[-1].second
-
         recommendations.index = recommendations.index.strftime(
             "%Y-%m-%d %H:%M:%S"
         )
-
-        if (
-            last_index_hour != 20
-            and last_index_minute != 59
-            and last_index_second != 59
-        ):
-            span_tag = "<span style='color: red'>"
-            close_span_tag = "</span>"
-            last_index = span_tag + recommendations.index[-1] + close_span_tag
-            recommendations.index = recommendations.index[:-1].tolist() + [
-                last_index
-            ]
 
         return recommendations
