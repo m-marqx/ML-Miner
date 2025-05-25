@@ -44,7 +44,6 @@ export default function Graph({
   const textColor = "rgba(255,255,255,1)";
   const watermarkColor = "rgba(255,255,255,0.12)";
 
-
   useEffect(() => {
     if (chartRef.current) {
       let data = xValues.map((value, index) => ({
@@ -76,7 +75,7 @@ export default function Graph({
           type: "group",
           rotation: (Math.PI * 3) / 2,
           bounding: "raw",
-          right: "6%",
+          right: "3%",
           top: watermarkLocation ? `${watermarkLocation}%` : "23%",
           z: 100,
           children: [
@@ -107,6 +106,10 @@ export default function Graph({
         },
         grid: {
           top: "20%",
+          bottom: "5%",
+          left: "5%",
+          right: "5%",
+          containLabel: true,
         },
         graphic: annual_watermark.current,
         xAxis: {
@@ -116,6 +119,7 @@ export default function Graph({
             fontSize: 18,
             fontWeight: "bold",
             color: textColor,
+            margin: 24,
           },
         },
         yAxis: {
