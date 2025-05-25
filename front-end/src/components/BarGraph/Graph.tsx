@@ -66,11 +66,10 @@ export default function Graph({
         value: isAbsolute ? d.value : (data_percentage[index] ?? 0),
       }));
 
-      const neutralColor = "#f0d25d"
+      const pendingColor = "#f0d25d"
 
       const barColors: string[] = data.map(d => d.value > 0 ? "#2196f3" : "#ef5350");
-      barColors[barColors.length - 1] = neutralColor;
-
+      barColors[barColors.length - 1] = pendingColor;
 
       annual_watermark.current = [
         {
