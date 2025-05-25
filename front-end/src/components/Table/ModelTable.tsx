@@ -122,8 +122,8 @@ export default function TableData() {
 
     const [sorting, setSorting] = useState<SortingState>([
         {
-            id: "name",
-            desc: false,
+            id: "date",
+            desc: true,
         },
     ])
 
