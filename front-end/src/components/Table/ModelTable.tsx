@@ -65,8 +65,8 @@ const columns: ColumnDef<TableData>[] = [
                 month: "short",
                 day: "2-digit",
             })
-            const isDifferentTime = date.getHours() !== 20 || date.getMinutes() !== 59 || date.getSeconds() !== 59
-            if (isDifferentTime) {
+            const isLastMinute = date.getHours() === 23 && date.getMinutes() === 59 && date.getSeconds() === 59
+            if (!isLastMinute) {
                 return (
                     <div className="text-[#f0d25d] font-semibold">
                         {formattedDate} (Pending)
