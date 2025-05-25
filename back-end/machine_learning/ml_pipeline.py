@@ -126,16 +126,6 @@ class ModelPipeline:
             A series containing model recommendations indexed by 
             formatted datetime strings in the 'America/Sao_Paulo' 
             timezone. The index format is 'YYYY-MM-DD HH:MM:SS'.
-
-        Notes
-        -----
-        - The returned recommendations are indexed with timestamps 
-        ending at 23:59:59 UTC and then converted to 'America/Sao_Paulo'
-        timezone.
-
-        - If the last index doesn't have time 20:59:59, it will be 
-        highlighted in red using HTML span tags regardless of the 
-        `span_tag` parameter.
         """
         model = self.prepare_model()
         recommendation_ml = model[["y_pred_probs", "Predict", "Position"]]
@@ -159,7 +149,6 @@ class ModelPipeline:
                 recommendations.index[:-1].tolist() + [last_index]
             )
             .tz_localize("UTC")
-            .tz_convert("America/Sao_Paulo")
         )
 
         recommendations.index = recommendations.index.strftime(
