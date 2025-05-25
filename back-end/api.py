@@ -130,7 +130,7 @@ def get_recommendations():
     new_recommendations = get_recommendation(
         recommendation_ml["Position"].loc["15-09-2024":],
         add_span_tag=True,
-    ).rename(f"model_{33139}")
+    ).rename(f"model_33139")
 
     recommendations = new_recommendations.copy()
 
