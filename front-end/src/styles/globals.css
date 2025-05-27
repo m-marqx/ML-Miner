@@ -200,6 +200,13 @@ h1, h2, h3, h4, h5, h6 {
   line-height: 1.25rem;
 }
 
+.scrollbar-subtle {
+  scrollbar-width: auto;
+  scrollbar-color: var(--color-zinc-700) var(--card-color);
+  background-color: var(--card-color);
+  border: 2px solid transparent;
+}
+
 @theme inline {
   --radius-sm: calc(var(--radius) - 4px);
   --radius-md: calc(var(--radius) - 2px);
