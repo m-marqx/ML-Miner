@@ -138,7 +138,7 @@ export default function Home() {
     watermarkLocation: "52%",
     watermarkFont: "2rem Inter",
     chartBgColor: "#18181B",
-    className: styles.graph,
+    className: "rounded-md bg-card-color h-full px-4 border",
   };
 
   const modelGraphConfig: GraphProps = {
@@ -153,8 +153,9 @@ export default function Home() {
     watermarkLocation: "52%",
     watermarkFont: "2rem Inter",
     chartBgColor: "#18181B",
-    className: styles.graph,
+    className: "rounded-md bg-card-color h-full px-4 border",
   };
+
 
   return (
     <div className={styles.main}>
