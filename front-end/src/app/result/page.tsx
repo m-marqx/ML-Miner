@@ -7,8 +7,8 @@ import Graph, { type GraphProps } from "../../components/BarGraph/Graph";
 import TableData from "@/src/components/Table/ModelTable";
 
 interface ModelRecommendation {
-    date: string | null;
-    model_33139: string | null;
+  date: string | null;
+  model_33139: string | null;
 }
 
 export default function Home() {
@@ -155,7 +155,6 @@ export default function Home() {
     chartBgColor: "#18181B",
     className: "rounded-md bg-card-color h-full px-4 border",
   };
-
 
   return (
     <div className={styles.main}>
