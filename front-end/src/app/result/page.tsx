@@ -5,6 +5,8 @@ import { useEffect, useState, useCallback } from "react";
 import styles from "./page.module.css";
 import Graph, { type GraphProps } from "../../components/BarGraph/Graph";
 import TableData from "@/src/components/Table/ModelTable";
+import { AppSidebar } from "@/src/components/Sidebar/sidebar";
+import { SidebarInset, SidebarProvider } from "@/components/ui/sidebar";
 
 interface ModelRecommendation {
   date: string | null;
@@ -157,26 +159,33 @@ export default function Home() {
   };
 
   return (
-    <div className={styles.main}>
-      <div className="grid grid-cols-1 content-between my-[3svh]">
-        <div className="h-[calc(var(--grid-height)/2-6svh)]">
-          <Graph {...modelGraphConfig} />
-        </div>
-        <div className="h-[calc(var(--grid-height)/2-6svh)]">
-          <Graph {...BtcGraphConfig} />
-        </div>
-      </div>
-      <div className="grid grid-cols-1 content-between my-[3svh]">
-        {tableLoading ? (
-          <div>Loading table data...</div>
-        ) : tableData.length > 0 ? (
-          <div className="h-[calc(91svh-2rem)]">
-            <TableData />
+    <div>
+      <SidebarProvider open={true} defaultOpen={true}>
+        <AppSidebar />
+        <SidebarInset className="w-0">
+          <div className={styles.main}>
+            <div className="grid grid-cols-1 content-between my-6">
+              <div className="h-[calc(var(--grid-height)/2-2svh)]">
+                <Graph {...modelGraphConfig} />
+              </div>
+              <div className="h-[calc(var(--grid-height)/2-2svh)]">
+                <Graph {...BtcGraphConfig} />
+              </div>
+            </div>
+            <div className="flex flex-col content-between my-6">
+              {tableLoading ? (
+                <div>Loading table data...</div>
+              ) : tableData.length > 0 ? (
+                <div className="h-[calc(var(--grid-height))]">
+                  <TableData />
+                </div>
+              ) : (
+                <div>No table data available</div>
+              )}
+            </div>
           </div>
-        ) : (
-          <div>No table data available</div>
-        )}
-      </div>
+        </SidebarInset>
+      </SidebarProvider>
     </div>
   );
 }

@@ -23,18 +23,6 @@ export default async function RootLayout({
     <html lang="en">
       <body className={styles.main}>
         <ContextProvider cookies={cookies}>
-          <div className={styles.navBar}>
-            <div className={styles.logoContainer}>
-              <img
-                src="https://avatars.githubusercontent.com/u/124513922?s=400&u=d374d7671e2f3d6f8d73a3cc0a8b5c6f702643ff"
-                alt="Logo" className={styles.logo}
-              />
-            </div>
-            <NavBar />
-            <div className={styles.web3Button}>
-              <appkit-button />
-            </div>
-          </div>
           {children}
         </ContextProvider>
       </body>
