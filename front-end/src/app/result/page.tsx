@@ -2,7 +2,6 @@
 
 import React from "react";
 import { useEffect, useState, useCallback } from "react";
-import styles from "./page.module.css";
 import Graph, { type GraphProps } from "../../components/BarGraph/Graph";
 import TableData from "@/src/components/Table/ModelTable";
 import { AppSidebar } from "@/src/components/Sidebar/sidebar";
@@ -163,12 +162,12 @@ export default function Home() {
       <SidebarProvider open={true} defaultOpen={true}>
         <AppSidebar />
         <SidebarInset className="w-0">
-          <div className={styles.main}>
-            <div className="grid grid-cols-1 content-between my-6">
-              <div className="h-[calc(var(--grid-height)/2-2svh)]">
+          <div className="grid grid-cols-[2fr_1fr] h-220 gap-6 mx-6">
+            <div className="grid grid-cols-1 my-6 gap-6">
+              <div className="h-110">
                 <Graph {...modelGraphConfig} />
               </div>
-              <div className="h-[calc(var(--grid-height)/2-2svh)]">
+              <div className="h-110">
                 <Graph {...BtcGraphConfig} />
               </div>
             </div>
@@ -176,7 +175,7 @@ export default function Home() {
               {tableLoading ? (
                 <div>Loading table data...</div>
               ) : tableData.length > 0 ? (
-                <div className="h-[calc(var(--grid-height))]">
+                <div className="h-226">
                   <TableData />
                 </div>
               ) : (
