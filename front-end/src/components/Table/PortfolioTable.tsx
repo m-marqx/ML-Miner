@@ -97,6 +97,10 @@ const columns: ColumnDef<PortfolioAsset>[] = [
 ]
 
 export default function PortfolioTable({ address }: { address: string }) {
+    if  (!address) {
+        return <div className="text-center flex flex-col justify-center h-88 text-gray-500">Please connect your wallet</div>
+    }
+
     const [data, setData] = useState<PortfolioAsset[]>([])
     const [loading, setLoading] = useState(false)
     const [sorting, setSorting] = useState<SortingState>([
