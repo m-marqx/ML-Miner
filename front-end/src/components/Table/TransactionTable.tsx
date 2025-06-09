@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useEffect, useState, useRef, useCallback } from "react";
+import React, { useEffect, useState, useRef, useCallback, useMemo } from "react";
 import {
     ColumnDef,
     flexRender,
@@ -66,7 +66,7 @@ export default function TransactionTable({ address }: { address: string }) {
         [],
     );
 
-    const columns = React.useMemo<ColumnDef<TxRow>[]>(
+    const columns = useMemo<ColumnDef<TxRow>[]>(
         () => [
             {
                 header: "Timestamp",
@@ -135,7 +135,7 @@ export default function TransactionTable({ address }: { address: string }) {
                         "-"
                     );
                 },
-                filterFn: (row, filterValue) => {
+                filterFn: (row, columnId, filterValue) => {
                     const searchTerm = String(filterValue).toLowerCase();
                     if (!searchTerm) return true;
                     const token = row.original.from_token;
