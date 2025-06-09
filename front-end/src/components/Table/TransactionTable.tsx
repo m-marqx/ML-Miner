@@ -40,6 +40,10 @@ type TxRow = {
 };
 
 export default function TransactionTable({ address }: { address: string }) {
+    if (!address) {
+        return <div className="text-center flex flex-col justify-center h-201 text-gray-500">Please connect your wallet</div>
+    }
+
     const [data, setData] = useState<TxRow[]>([]);
     const [loading, setLoading] = useState(false);
     const [sorting, setSorting] = useState<SortingState>([
