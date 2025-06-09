@@ -11,7 +11,7 @@ import {
     SidebarMenuButton,
     SidebarMenuItem,
 } from "@/components/ui/sidebar"
-import { BarChart3, ArrowLeftRight,  Wallet, TrendingUp, } from "lucide-react"
+import { BarChart3, ArrowLeftRight, Wallet, TrendingUp, } from "lucide-react"
 
 import { useAccount, useBalance } from 'wagmi'
 
@@ -46,16 +46,16 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
     const pathname = usePathname()
 
     const balance = () => {
-            const { address } = useAccount();
-            const { data, isError, isLoading } = useBalance({
-                address: address,
-                chainId: 137,
-            });
+        const { address } = useAccount();
+        const { data, isError, isLoading } = useBalance({
+            address: address,
+            chainId: 137,
+        });
 
-            if (isLoading) return <span>Fetching balance…</span>;
-            if (isError) return <span>Error fetching balance</span>;
-            if (!data) return <span>No balance data</span>;
-            return <span>{(Number(data.value) / 10 ** data.decimals).toFixed(4)} {data.symbol}</span>;
+        if (isLoading) return <span>Fetching balance…</span>;
+        if (isError) return <span>Error fetching balance</span>;
+        if (!data) return <span>No balance data</span>;
+        return <span>{(Number(data.value) / 10 ** data.decimals).toFixed(4)} {data.symbol}</span>;
     }
     return (
         <Sidebar {...props} className="border-r border-[#27272a]/60">
