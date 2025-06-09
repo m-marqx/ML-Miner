@@ -27,6 +27,10 @@ export default function DonutChart({
     theme = "dark",
     title = "Portfolio Balances",
 }: DonutChartProps) {
+    if (!address) {
+        return <div className={`text-center flex flex-col justify-center text-gray-500 ${className}`}>Please connect your wallet</div>
+    }
+
     const chartRef = useRef<HTMLDivElement>(null);
     const [data, setData] = useState<PortfolioAsset[]>([]);
     const fetchPortfolio = useCallback(async () => {
