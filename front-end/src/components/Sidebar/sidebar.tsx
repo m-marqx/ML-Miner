@@ -23,8 +23,8 @@ const navigationItems = [
         icon: ArrowLeftRight,
     },
     {
-        title: "Result",
-        url: "/result",
+        title: "AI Signals",
+        url: "/ai-signals",
         icon: BarChart3,
     },
 ]
