@@ -92,12 +92,12 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
                                     <SidebarMenuButton
                                         asChild
                                         isActive={pathname === item.url}
-                                        className="hover:bg-gradient-to-r hover:from-[#d87a16] hover:to-[#e89b45] hover:text-white transition-all duration-200 rounded-lg mx-1 data-[active=true]:bg-gradient-to-r data-[active=true]:from-[#d87a16] data-[active=true]:to-[#e89b45] data-[active=true]:text-white data-[active=true]:shadow-md"
+                                        variant={"gradient"}
                                     >
                                         <a href={item.url} className="flex items-center gap-3">
                                             <item.icon className="h-4 w-4" />
-                                            <span className="font-medium">{item.title}</span>
-                                            {pathname === item.url && <div className="ml-auto w-1.5 h-1.5 rounded-full bg-white"></div>}
+                                            <span className="font-semibold">{item.title}</span>
+                                            {pathname === item.url && <div className="ml-auto w-2 h-2 rounded-full bg-white"></div>}
                                         </a>
                                     </SidebarMenuButton>
                                 </SidebarMenuItem>
@@ -117,12 +117,12 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
                                     <SidebarMenuButton
                                         asChild
                                         isActive={pathname === item.url}
-                                        className="hover:bg-gradient-to-r hover:from-[#d87a16] hover:to-[#e89b45] hover:text-white transition-all duration-200 rounded-lg mx-1 data-[active=true]:bg-gradient-to-r data-[active=true]:from-[#d87a16] data-[active=true]:to-[#e89b45] data-[active=true]:text-white data-[active=true]:shadow-md"
+                                        variant={"gradient"}
                                     >
                                         <a href={item.url} className="flex items-center gap-3">
                                             <item.icon className="h-4 w-4" />
-                                            <span className="font-medium">{item.title}</span>
-                                            {pathname === item.url && <div className="ml-auto w-1.5 h-1.5 rounded-full bg-white"></div>}
+                                            <span className="font-semibold">{item.title}</span>
+                                            {pathname === item.url && <div className="ml-auto w-2 h-2 rounded-full bg-white"></div>}
                                         </a>
                                     </SidebarMenuButton>
                                 </SidebarMenuItem>
