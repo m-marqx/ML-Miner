@@ -35,11 +35,6 @@ const walletItems = [
         url: "/portfolio",
         icon: TrendingUp,
     },
-    {
-        title: "Wallet",
-        url: "/wallet",
-        icon: Wallet,
-    },
 ]
 
 export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
