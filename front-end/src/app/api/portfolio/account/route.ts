@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server"
+import { TransactionHistoryItem } from "@/types/AcoountTypes"
 
 export async function GET(request: Request) {
     const { searchParams } = new URL(request.url)
@@ -31,11 +32,11 @@ export async function GET(request: Request) {
         const data = await moralisRes.json()
 
         const swaps = Array.isArray(data.result)
-            ? data.result.filter((item: any) => item.category === "token swap")
+            ? data.result.filter((item: TransactionHistoryItem) => item.category === "token swap")
             : []
 
         return NextResponse.json({ result: swaps })
-    } catch (err) {
-        return NextResponse.json({ error: "Internal server error" }, { status: 500 })
+        } catch (error: unknown) {
+        return NextResponse.json({ error: `Error fetching transaction history: ${error}` }, { status: 500 })
     }
 }
