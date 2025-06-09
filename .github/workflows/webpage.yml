@@ -1,4 +1,4 @@
-name: Odin System Docker Image
+name: Quant System Docker Image
 
 on:
   push:
