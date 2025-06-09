@@ -5,7 +5,6 @@ import { headers } from 'next/headers'
 import ContextProvider from '../components/WalletConnect/context';
 import styles from './layout.module.css';
 import "../styles/globals.css";
-import NavBar from '../components/NavBar/navbar';
 
 export const metadata: Metadata = {
   title: 'Quantitative System',
