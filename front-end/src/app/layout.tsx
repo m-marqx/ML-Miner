@@ -5,6 +5,8 @@ import { headers } from 'next/headers'
 import ContextProvider from '../components/WalletConnect/context';
 import styles from './layout.module.css';
 import "../styles/globals.css";
+import { SpeedInsights } from "@vercel/speed-insights/next"
+import { Analytics } from "@vercel/analytics/next"
 
 export const metadata: Metadata = {
   title: 'Quantitative System',
@@ -20,6 +22,8 @@ export default async function RootLayout({
   const cookies = headersData.get('cookie');
   return (
     <html lang="en">
+      <SpeedInsights />
+      <Analytics />
       <body className={styles.main}>
         <ContextProvider cookies={cookies}>
           {children}
