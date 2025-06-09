@@ -4,11 +4,10 @@ import React, { useRef, useEffect, useCallback, useState } from "react";
 type EChartsOption = echarts.EChartsOption;
 
 interface DonutChartProps {
-    address?: string; // Optional address to fetch portfolio data, default is empty string
-    width?: string;
-    height?: string;
-    theme?: string | object; // Theme can be a string (e.g., 'dark') or a pre-registered theme object
-    title?: string; // Optional title for the chart series
+    address?: string;
+    className?: string;
+    theme?: string | object;
+    title?: string;
 }
 
 type PortfolioAsset = {
@@ -24,8 +23,7 @@ type PortfolioAsset = {
 
 export default function DonutChart({
     address = "",
-    width = "100%",
-    height = "24rem",
+    className = "w-full h-88",
     theme = "dark",
     title = "Portfolio Balances",
 }: DonutChartProps) {
@@ -124,5 +122,5 @@ export default function DonutChart({
         }
     }, [data, theme, title]); // Re-run effect if data, theme, or title changes
 
-    return <div ref={chartRef} style={{ width, height }}></div>;
+    return <div ref={chartRef} className={className}></div>;
 }
