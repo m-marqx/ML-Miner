@@ -11,7 +11,7 @@ import {
     SidebarMenuButton,
     SidebarMenuItem,
 } from "@/components/ui/sidebar"
-import { BarChart3, ArrowLeftRight, Wallet, TrendingUp, } from "lucide-react"
+import { BarChart3, ArrowLeftRight, TrendingUp, } from "lucide-react"
 
 import { useAccount, useBalance } from 'wagmi'
 
