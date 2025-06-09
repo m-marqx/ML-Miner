@@ -49,7 +49,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
 
         if (isLoading) return <span>Fetching balance…</span>;
         if (isError) return <span>Error fetching balance</span>;
-        if (!data) return <span>No balance data</span>;
+        if (!data || address === undefined) return <span>No balance data</span>;
         return <span>{(Number(data.value) / 10 ** data.decimals).toFixed(4)} {data.symbol}</span>;
     }
     return (
