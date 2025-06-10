@@ -442,26 +442,28 @@ def update_btc_data():
 def get_model_recommendations():
     database_url = os.getenv("DATABASE_URL")
 
+    if not database_url:
+        return (
+            jsonify({"status": "error", "message": "Database URL not set"}),
+            500,
+        )
+
     model_pipeline = ModelPipeline("btc", database_url=database_url)
-    recommendations = model_pipeline.get_model_recommendations()[::-1]
-    clean_recomendations = (
-        model_pipeline.get_model_recommendations(False)[::-1]
+    recomendations = (
+        model_pipeline.get_model_recommendations(False)
         .rename("Clean")
         .to_frame()
-    )
+    )[::-1]
 
-    clean_recomendations_splitted = clean_recomendations["Clean"].str.split(" ", expand=True)
-    clean_recomendation = clean_recomendations_splitted[0].rename("position").to_frame()
-    clean_recomendation["side"] = (
-        clean_recomendations_splitted[1].fillna("").astype(str)
+    recomendations_splitted = recomendations["Clean"].str.split(" ", expand=True)
+    recomendation = recomendations_splitted[0].rename("position").to_frame()
+    recomendation["side"] = (
+        recomendations_splitted[1].fillna("").astype(str)
         + " "
-        + clean_recomendations_splitted[2].fillna("").astype(str).fillna("")
+        + recomendations_splitted[2].fillna("").astype(str).fillna("")
     )
-    clean_recomendation["capital"] = clean_recomendations_splitted[4].fillna("")
-    recommendations = pd.concat([recommendations, clean_recomendation], axis=1)
-    recommendations = recommendations.fillna("")
-
-    recommendations.to_sql(
+    recomendation["capital"] = recomendations_splitted[4].fillna("")
+    recomendation.to_sql(
         "model_recommendations",
         con=database_url,
         if_exists="replace",
