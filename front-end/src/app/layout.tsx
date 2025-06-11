@@ -3,7 +3,6 @@ import type { Metadata } from 'next'
 import '@reown/appkit-wallet-button/react'
 import { headers } from 'next/headers'
 import ContextProvider from '../components/WalletConnect/context';
-import styles from './layout.module.css';
 import "../styles/globals.css";
 import { SpeedInsights } from "@vercel/speed-insights/next"
 import { Analytics } from "@vercel/analytics/next"
@@ -24,7 +23,7 @@ export default async function RootLayout({
     <html lang="en">
       <SpeedInsights />
       <Analytics />
-      <body className={styles.main}>
+      <body className="bg-background-color w-full h-full text-primary-text-color">
         <ContextProvider cookies={cookies}>
           {children}
         </ContextProvider>
