@@ -332,12 +332,17 @@ def process_balance(wallet_df: pd.DataFrame, indexes_to_drop: pd.Index):
     results["highest_Modelo"] = results["Modelo"].cummax()
     results["data"] = wallet_df.reset_index()["blockTimestamp"]
     results = results.set_index("data")
-    results["asset_ratio"] = wallet_df.reset_index().set_index(
-        "blockTimestamp"
-    )["asset_ratio"]
-    results[results.columns[:-1]] = (
-        results[results.columns[:-1]]
+
+    results["asset_ratio"] = (
+        wallet_df.set_index("blockTimestamp")
+        .loc[results.index]
+        .drop_duplicates()["asset_ratio"]
+        .reset_index()
+        .drop_duplicates()
+        .set_index("data")
     )
+
+    results[results.columns[:-1]] = results[results.columns[:-1]]
     return results
 
 
