@@ -118,7 +118,17 @@ export default function Home() {
     };
   }, [fetchChartData]);
 
-  if (isLoading) return <div>Carregando...</div>;
+  if (isLoading || tableLoading) {
+    return (
+      <SidebarProvider open={true} defaultOpen={true}>
+        <AppSidebar />
+        <div className="flex justify-center items-center w-full">
+          <div className="animate-spin rounded-full h-32 w-32 border-background border-6 border-t-6 border-t-primary border-b-6 border-b-primary"></div>
+        </div>
+      </SidebarProvider>
+    );
+  }
+
   if (
     !btcXValues.length ||
     !btcYValues.length ||
