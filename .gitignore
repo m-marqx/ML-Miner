@@ -160,6 +160,7 @@ ___*
 *.csv
 *.json
 *.tmp
+*.ipynb
 unittest*
 data/mined_models_config
 data/models
