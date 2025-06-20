@@ -261,13 +261,13 @@ def get_account_balance(wallet: str, api_key: str, update: bool = False):
 
             wallet_df_adj = pd.concat([temp_df, wallet_df_adj], axis=0)
 
-            wallet_df_adj.to_sql(
-                "wallet_balances",
-                con=database_url,
-                if_exists="replace",
-                index=True,
-                index_label="height",
-            )
+        wallet_df_adj.to_sql(
+            "wallet_balances",
+            con=database_url,
+            if_exists="replace",
+            index=True,
+            index_label="height",
+        )
 
     return wallet_df
 
