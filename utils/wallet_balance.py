@@ -57,3 +57,22 @@ class WalletBalanceAnalyzer:
         self.excluded_categories = ["contract interaction", "approve"]
         self.extra_columns = ["airdrop", "receive"]
         self.moralis_api = MoralisAPI(verbose=True, api_key=self.api_key)
+
+
+    def set_wallet(self, wallet_address: str) -> "WalletBalanceAnalyzer":
+        """
+        Set the wallet address for analysis.
+
+        Parameters
+        ----------
+        wallet_address : str
+            The new wallet address.
+
+        Returns
+        -------
+        WalletBalanceAnalyzer
+            Self for method chaining.
+        """
+        self.wallet = wallet_address
+        return self
+
