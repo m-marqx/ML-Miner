@@ -76,3 +76,20 @@ class WalletBalanceAnalyzer:
         self.wallet = wallet_address
         return self
 
+    def set_api_key(self, moralis_api_key: str) -> "WalletBalanceAnalyzer":
+        """
+        Set the API key for Moralis services.
+
+        Parameters
+        ----------
+        moralis_api_key : str
+            The new API key.
+
+        Returns
+        -------
+        WalletBalanceAnalyzer
+            Self for method chaining.
+        """
+        self.api_key = moralis_api_key
+        return self
+
