@@ -93,3 +93,22 @@ class WalletBalanceAnalyzer:
         self.api_key = moralis_api_key
         return self
 
+    def set_database_url(
+        self, database_connection_url: str
+    ) -> "WalletBalanceAnalyzer":
+        """
+        Set the database connection URL.
+
+        Parameters
+        ----------
+        database_connection_url : str
+            The new database connection URL.
+
+        Returns
+        -------
+        WalletBalanceAnalyzer
+            Self for method chaining.
+        """
+        self.database_url = database_connection_url
+        return self
+
