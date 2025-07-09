@@ -112,3 +112,20 @@ class WalletBalanceAnalyzer:
         self.database_url = database_connection_url
         return self
 
+    def set_update_flag(self, enable_update: bool) -> "WalletBalanceAnalyzer":
+        """
+        Set the update flag for data operations.
+
+        Parameters
+        ----------
+        enable_update : bool
+            The new update flag value.
+
+        Returns
+        -------
+        WalletBalanceAnalyzer
+            Self for method chaining.
+        """
+        self.update = enable_update
+        return self
+
