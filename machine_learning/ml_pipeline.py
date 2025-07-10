@@ -91,13 +91,29 @@ class ModelPipeline:
         - "33139_features": Contains feature parameters
         - "33139_hyperparams": Contains model hyperparameters
         """
-        ml_configs = literal_eval(json.loads(os.getenv("33139_configs")))
-        ml_features = {
-            "feat_parameters": json.loads(os.getenv("33139_features"))
-        }
-        ml_hyperparams = {
-            "hyperparameters": json.loads(os.getenv("33139_hyperparams"))
-        }
+        try:
+            ml_configs = literal_eval(json.loads(os.getenv("33139_configs")))
+            ml_features = {
+                "feat_parameters": json.loads(os.getenv("33139_features"))
+            }
+            ml_hyperparams = {
+                "hyperparameters": json.loads(os.getenv("33139_hyperparams"))
+            }
+        except (json.JSONDecodeError):
+            ml_configs = literal_eval(os.getenv("33139_configs"))
+            ml_features = {
+                "feat_parameters": os.getenv("33139_features")
+            }
+            try:
+                ml_hyperparams = {
+                    "hyperparameters": os.getenv("33139_hyperparams")
+                }
+            except (TypeError) as type_error:
+                raise TypeError(
+                    "Invalid hyperparameters format. "
+                    f"{os.getenv('33139_hyperparams')}"
+                    f"{type(os.getenv('33139_hyperparams'))}"
+                ) from type_error
 
         configs_series = pd.Series(
             {**ml_features, **ml_hyperparams, **ml_configs}
