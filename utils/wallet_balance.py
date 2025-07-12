@@ -129,3 +129,22 @@ class WalletBalanceAnalyzer:
         self.update = enable_update
         return self
 
+    def set_excluded_categories(
+        self, excluded_transaction_categories: list[str]
+    ) -> "WalletBalanceAnalyzer":
+        """
+        Set the transaction categories to exclude from analysis.
+
+        Parameters
+        ----------
+        excluded_transaction_categories : list of str
+            The transaction categories to exclude.
+
+        Returns
+        -------
+        WalletBalanceAnalyzer
+            Self for method chaining.
+        """
+        self.excluded_categories = excluded_transaction_categories
+        return self
+
