@@ -124,23 +124,23 @@ class ModelPipeline:
     def get_model_recommendations(self, span_tag: bool = True):
         """
         Generate and format model recommendations with appropriate time
-        indexing. This method prepares a model, extracts prediction 
-        probabilities and positions, and formats the recommendations 
-        with proper timezone handling.  The last index is set to the 
-        current time, and may be highlighted in red if it  doesn't 
+        indexing. This method prepares a model, extracts prediction
+        probabilities and positions, and formats the recommendations
+        with proper timezone handling.  The last index is set to the
+        current time, and may be highlighted in red if it  doesn't
         match the expected time format (20:59:59).
 
         Parameters
         ----------
         span_tag : bool, default=True
-            Whether to add HTML span tags to the recommendation text 
+            Whether to add HTML span tags to the recommendation text
             for styling.
 
         Returns
         -------
         pandas.Series
-            A series containing model recommendations indexed by 
-            formatted datetime strings in the 'America/Sao_Paulo' 
+            A series containing model recommendations indexed by
+            formatted datetime strings in the 'America/Sao_Paulo'
             timezone. The index format is 'YYYY-MM-DD HH:MM:SS'.
         """
         model = self.prepare_model()
