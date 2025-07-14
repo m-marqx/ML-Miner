@@ -148,3 +148,23 @@ class WalletBalanceAnalyzer:
         self.excluded_categories = excluded_transaction_categories
         return self
 
+    def _get_usd_columns(self, token_balance_df: pd.DataFrame) -> list[str]:
+        """
+        Get columns containing USD or DAI tokens.
+
+        Parameters
+        ----------
+        token_balance_df : pd.DataFrame
+            The dataframe to search for USD columns.
+
+        Returns
+        -------
+        list of str
+            Column names containing USD or DAI tokens.
+        """
+        return [
+            col
+            for col in token_balance_df.columns
+            if any(sub in col for sub in ["USD", "DAI"])
+        ]
+
