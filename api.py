@@ -35,6 +35,30 @@ def add_cors_headers(response):
     response.headers.add("Access-Control-Allow-Methods", "GET,POST,OPTIONS")
     return response
 
+@app.route("/health", methods=["GET"])
+def health_check():
+    """Health check endpoint for monitoring."""
+    try:
+        # Check database connection
+        database_url = os.getenv("DATABASE_URL")
+        if database_url:
+            pd.read_sql("SELECT 1 as test", con=database_url)
+
+        return jsonify({
+            "status": "healthy",
+            "timestamp": datetime.now().isoformat(),
+            "services": {
+                "api": "running",
+                "database": "connected" if database_url else "not_configured"
+            }
+        })
+    except Exception as e:
+        return jsonify({
+            "status": "unhealthy",
+            "timestamp": datetime.now().isoformat(),
+            "error": str(e)
+        }), 500
+
 @app.route("/update_price_data", methods=["GET"])
 def update_BTC_price_data():
     database_url = os.getenv("DATABASE_URL")
