@@ -9,12 +9,12 @@ pandas==2.0.3
 pyarrow==12.0.1
 numpy==1.23.5
 statsmodels==0.14.4
-cryptoexplorer>=1.1
+CryptoExplorer==1.2
 joblib==1.4.2
 flask==3.1.0
 flask-cors==5.0.1
 gunicorn==23.0.0
-SQLAlchemy==2.0.39
-psycopg2==2.9.10
-schedule==1.2.0
+SQLAlchemy>=2.0.39
+psycopg2>=2.9.10
+schedule==1.2.2
 requests==2.31.0
