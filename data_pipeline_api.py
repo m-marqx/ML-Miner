@@ -36,6 +36,35 @@ class DataPipelineAPI:
         if not all([self.wallet, self.api_key, self.database_url]):
             raise ValueError("Missing required environment variables: polygon_wallet, moralis_api_key, DATABASE_URL")
 
+    def process_total_usd(self, dataframe: pd.DataFrame, token: str = "WBTC"):
+        """
+        Process total USD value in the DataFrame.
+        This function calculates the total USD value by summing relevant
+        columns and multiplying WBTC by its USD price.
+
+        Parameters
+        ----------
+        dataframe : pd.DataFrame
+            DataFrame containing wallet balances with columns for various
+            tokens and their USD prices.
+
+        Returns
+        -------
+        pd.DataFrame
+            DataFrame with an additional column 'total_usd' containing the
+            total USD value.
+        """
+        usd_columns = [
+            col
+            for col in dataframe.columns
+            if any(sub in col for sub in ["USD", "DAI"])
+        ]
+
+        return (
+            dataframe[usd_columns].sum(axis=1)
+            + dataframe[token] * dataframe["usdPrice"]
+        ).fillna(0)
+
     def get_wallet_transactions(self, update: bool = True) -> pd.DataFrame:
         """
         Fetch new wallet transactions and update wallet balances.
