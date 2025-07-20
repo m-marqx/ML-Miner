@@ -168,23 +168,32 @@ class DataPipelineAPI:
                 moralis_api.logger.warning(f"Error processing block {block}: {str(e)}")
                 continue
 
-        # Check if we have any token balance data
         if not token_balances:
             logger.info("No token balance data collected")
-            return wallet_data if "height" not in wallet_data.columns else wallet_data.set_index("height")
+            return (
+                wallet_data if "height" not in wallet_data.columns
+                else wallet_data.set_index("height")
+            )
 
-        # Process the collected data without response parameter
-        wallet_data = wallet_data.set_index("height") if "height" in wallet_data.columns else wallet_data
+        wallet_data = (
+            wallet_data.set_index("height")
+            if "height" in wallet_data.columns
+            else wallet_data
+        )
+
         new_wallet_data = self._process_wallet_data(token_balances, response)
 
-        # Combine old and new data
         concated_wallet_data = pd.concat([wallet_data, new_wallet_data])
 
-        if 'formatted_total_usd' not in concated_wallet_data.columns:
-            concated_wallet_data['formatted_total_usd'] = (
-                concated_wallet_data["total_usd"]
-                + concated_wallet_data["value_aggregated"]
-            )
+        concated_wallet_data['total_usd'] = self.process_total_usd(
+            concated_wallet_data,
+            token="WBTC",
+        )
+
+        concated_wallet_data['formatted_total_usd'] = (
+            concated_wallet_data["total_usd"]
+            + concated_wallet_data["value_aggregated"]
+        )
 
         concated_wallet_data[['value_aggregated', 'formatted_total_usd']] = (
             concated_wallet_data[['value_aggregated', 'formatted_total_usd']]
@@ -192,7 +201,6 @@ class DataPipelineAPI:
         )
 
         if update:
-            # Save to database
             concated_wallet_data.to_sql(
                 "wallet_balances",
                 con=self.database_url,
