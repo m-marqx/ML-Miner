@@ -214,3 +214,50 @@ class DataPipelineAPI:
             logger.info("Returning wallet balances DataFrame")
             return concated_wallet_data
 
+    def update_wallet_usd(self, wallet_data: pd.DataFrame | None = None, update: bool = True) -> pd.DataFrame:
+        """
+        Update wallet USD values table.
+
+        Extracts USD value information from wallet balance data and creates
+        a simplified table with timestamps and total USD values.
+
+        Parameters
+        ----------
+        wallet_data : pd.DataFrame
+            Wallet data DataFrame with 'blockTimestamp' and 'formatted_total_usd' columns.
+            If None, reads from database 'wallet_balances' table.
+            (default: None)
+        update : bool
+            If True, saves processed data to database. If False, returns
+            DataFrame without database update.
+            (default: True)
+
+        Returns
+        -------
+        pd.DataFrame
+            DataFrame containing wallet USD data with columns:
+            - 'blockTimestamp': timestamp of the block
+            - 'wallet_usd': total USD value of wallet
+            Index is 'height' (block number).
+        """
+        logger.info("Starting wallet USD update...")
+
+        if wallet_data is None:
+            wallet_data = pd.read_sql("wallet_balances", con=self.database_url, index_col="height")
+
+        wallet_usd = wallet_data[['blockTimestamp', 'formatted_total_usd']]
+        wallet_usd = wallet_usd.rename(columns={"formatted_total_usd": "wallet_usd"})
+
+        if update:
+            wallet_usd.reset_index().to_sql(
+                "wallet_usd",
+                con=self.database_url,
+                if_exists="replace",
+                index=False,
+            )
+            logger.info("Wallet USD data updated in database")
+            return wallet_usd
+        else:
+            logger.info("Returning wallet USD DataFrame")
+            return wallet_usd
+
