@@ -61,9 +61,9 @@ class DataPipelineAPI:
         ]
 
         return (
-            dataframe[usd_columns].sum(axis=1)
-            + dataframe[token] * dataframe["usdPrice"]
-        ).fillna(0)
+            dataframe[usd_columns].sum(axis=1).fillna(0) +
+            dataframe[token].fillna(0) * dataframe["usdPrice"]
+        )
 
     def get_wallet_transactions(self, update: bool = True) -> pd.DataFrame:
         """
