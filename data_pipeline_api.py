@@ -214,7 +214,11 @@ class DataPipelineAPI:
             logger.info("Returning wallet balances DataFrame")
             return concated_wallet_data
 
-    def update_wallet_usd(self, wallet_data: pd.DataFrame | None = None, update: bool = True) -> pd.DataFrame:
+    def update_wallet_usd(
+        self,
+        wallet_data: pd.DataFrame | None = None,
+        update: bool = True,
+    ) -> pd.DataFrame:
         """
         Update wallet USD values table.
 
