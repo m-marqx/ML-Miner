@@ -265,3 +265,75 @@ class DataPipelineAPI:
             logger.info("Returning wallet USD DataFrame")
             return wallet_usd
 
+    def update_btc_data(self, update: bool = True) -> pd.DataFrame:
+        """
+        Update BTC price data.
+
+        Fetches new BTC/USDT price data from Binance using CCXT API,
+        starting from the last recorded timestamp in the database.
+
+        Parameters
+        ----------
+        update : bool, default True
+            If True, saves processed data to database. If False, returns
+            DataFrame without database update.
+
+        Returns
+        -------
+        pd.DataFrame
+            DataFrame containing BTC OHLCV data with date index.
+            Columns include open, high, low, close, and volume.
+
+        Notes
+        -----
+        Uses 1-day timeframe for BTC data. Excludes the last 2 rows from
+        existing data to avoid incomplete candles.
+        """
+        logger.info("Starting BTC data update...")
+
+        try:
+            database_df = pd.read_sql("btc", con=self.database_url, index_col="date").iloc[:-2]
+        except:
+            first_time = pd.to_datetime("2012-01-02 00:00:00").timestamp() * 1000
+            ccxt_api = CcxtAPI(
+                "BTC/USD",
+                "1d",
+                ccxt.bitstamp(),
+                since=int(first_time),
+                verbose="Text",
+            )
+
+            database_df = ccxt_api.get_all_klines().to_OHLCV().data_frame.loc[:"2020"]
+            database_df.index.name = "date"
+            database_df["updatedAt"] = pd.Timestamp.now(tz='UTC')
+
+        last_time = pd.to_datetime(database_df.index[-2]).timestamp() * 1000
+        logger.info(f"Last recorded BTC timestamp: {last_time}")
+
+        # Fetch new BTC data
+        ccxt_api = CcxtAPI(
+            "BTC/USDT",
+            "1d",
+            ccxt.binance(),
+            since=int(last_time),
+            verbose="Text",
+        )
+
+        new_data = ccxt_api.get_all_klines().to_OHLCV().data_frame
+        new_data['updatedAt'] = pd.Timestamp.now(tz='UTC')
+        btc = new_data.combine_first(database_df).drop_duplicates()
+
+        if update:
+            btc.to_sql(
+                "btc",
+                con=self.database_url,
+                if_exists="replace",
+                index=True,
+                index_label="date",
+            )
+            logger.info("BTC data updated in database")
+            return btc
+        else:
+            logger.info("Returning BTC DataFrame")
+            return btc
+
