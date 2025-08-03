@@ -337,3 +337,134 @@ class DataPipelineAPI:
             logger.info("Returning BTC DataFrame")
             return btc
 
+    def update_model_recommendations(self, update: bool = True) -> pd.DataFrame:
+        """
+        Update model recommendations.
+
+        Generates trading recommendations using the machine learning pipeline
+        and processes them into structured format with position, side, and capital columns.
+
+        Parameters
+        ----------
+        update : bool, default True
+            If True, saves processed data to database. If False, returns
+            DataFrame without database update.
+
+        Returns
+        -------
+        pd.DataFrame
+            DataFrame containing model recommendations with columns:
+            - 'position': trading position recommendation
+            - 'side': trading side and direction
+            - 'capital': recommended capital allocation
+            Index is date.
+
+        Notes
+        -----
+        Recommendations are processed by splitting the raw recommendation text
+        and extracting position, side, and capital information.
+        """
+        logger.info("Starting model recommendations update...")
+
+        try:
+            model_pipeline = ModelPipeline("btc", database_url=self.database_url)
+
+            # Get recommendations with better error handling
+            try:
+                raw_recommendations = model_pipeline.get_model_recommendations(False)
+                logger.info(f"Raw recommendations type: {type(raw_recommendations)}")
+                logger.info(f"Raw recommendations shape/length: {getattr(raw_recommendations, 'shape', len(raw_recommendations) if hasattr(raw_recommendations, '__len__') else 'unknown')}")
+
+                if raw_recommendations is None or (hasattr(raw_recommendations, 'empty') and raw_recommendations.empty):
+                    logger.warning("No recommendations returned from model pipeline")
+                    # Return empty DataFrame with expected structure
+                    empty_df = pd.DataFrame(columns=['position', 'side', 'capital'])
+                    if update:
+                        empty_df.to_sql(
+                            "model_recommendations",
+                            con=self.database_url,
+                            if_exists="replace",
+                            index=True,
+                            index_label="date",
+                        )
+                    return empty_df
+
+            except Exception as e:
+                logger.error(f"Error getting model recommendations: {str(e)}")
+                logger.error(f"Error type: {type(e)}")
+                # Return empty DataFrame with expected structure
+                empty_df = pd.DataFrame(columns=['position', 'side', 'capital'])
+                if update:
+                    empty_df.to_sql(
+                        "model_recommendations",
+                        con=self.database_url,
+                        if_exists="replace",
+                        index=True,
+                        index_label="date",
+                    )
+                return empty_df
+
+            clean_recomendations = (
+                raw_recommendations
+                .rename("Clean")
+                .to_frame()
+            )[::-1]
+
+            if clean_recomendations.empty:
+                logger.warning("Clean recommendations DataFrame is empty")
+                empty_df = pd.DataFrame(columns=['position', 'side', 'capital'])
+                if update:
+                    empty_df.to_sql(
+                        "model_recommendations",
+                        con=self.database_url,
+                        if_exists="replace",
+                        index=True,
+                        index_label="date",
+                    )
+                return empty_df
+
+            logger.info(f"Processing {len(clean_recomendations)} recommendations")
+
+            clean_recomendations_splitted = clean_recomendations["Clean"].str.split(" ", expand=True)
+            clean_recomendation = clean_recomendations_splitted[0].rename("position").to_frame()
+            clean_recomendation["side"] = (
+                clean_recomendations_splitted[1].fillna("").astype(str)
+                + " "
+                + clean_recomendations_splitted[2].fillna("").astype(str).fillna("")
+            )
+            clean_recomendation["capital"] = clean_recomendations_splitted[4].fillna("")
+
+            if update:
+                clean_recomendation.to_sql(
+                    "model_recommendations",
+                    con=self.database_url,
+                    if_exists="replace",
+                    index=True,
+                    index_label="date",
+                )
+                logger.info("Model recommendations updated in database")
+                return clean_recomendation
+            else:
+                logger.info("Returning model recommendations DataFrame")
+                return clean_recomendation
+
+        except Exception as e:
+            logger.error(f"Error in update_model_recommendations: {str(e)}")
+            logger.error(f"Error type: {type(e)}")
+            import traceback
+            logger.error(f"Traceback: {traceback.format_exc()}")
+            # Return empty DataFrame to prevent pipeline failure
+            empty_df = pd.DataFrame(columns=['position', 'side', 'capital'])
+            if update:
+                try:
+                    empty_df.to_sql(
+                        "model_recommendations",
+                        con=self.database_url,
+                        if_exists="replace",
+                        index=True,
+                        index_label="date",
+                    )
+                except Exception as db_error:
+                    logger.error(f"Failed to save empty recommendations to database: {str(db_error)}")
+            return empty_df
+
