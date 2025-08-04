@@ -468,3 +468,141 @@ class DataPipelineAPI:
                     logger.error(f"Failed to save empty recommendations to database: {str(db_error)}")
             return empty_df
 
+
+    def _process_wallet_data(self, token_balances: list, response: list) -> pd.DataFrame:
+        """
+        Process wallet data from token balances and transaction responses.
+
+        Combines token balance data with transaction responses, calculates
+        USD values, processes transfers, and creates aggregated metrics.
+
+        Parameters
+        ----------
+        token_balances : list of pd.DataFrame
+            List of DataFrames containing token balance data for each block.
+        response : list of dict
+            List of transaction response dictionaries from Moralis API.
+
+        Returns
+        -------
+        pd.DataFrame
+            Processed DataFrame with wallet data including:
+            - Token balances and prices
+            - Total USD values
+            - Aggregated transaction values
+            - Block timestamps
+            Index is 'height' (block number).
+
+        Notes
+        -----
+        This is a private method that handles complex data processing including:
+        - Merging token balances with transaction data
+        - Calculating USD values for different tokens
+        - Processing transfer directions (receive/send)
+        - Creating cumulative aggregated values
+        """
+        if not token_balances or len(token_balances) == 0:
+            # Return empty DataFrame with expected structure if no token balances
+            logger.warning("No token balances provided to process")
+            return pd.DataFrame()
+
+        try:
+            response_data = pd.concat(token_balances)
+        except Exception as e:
+            logger.error(f"Error concatenating token balances: {str(e)}")
+            return pd.DataFrame()
+
+        response_data = response_data.reset_index()
+        response_data = response_data.rename(columns={"index": "block_number"})
+
+        new_data = response_data.copy()
+
+        usd_columns = [col for col in new_data.columns if any(sub in col for sub in ["USD", "DAI"])]
+        new_data["total_usd"] = (new_data[usd_columns].sum(axis=1) + new_data["WBTC"] * new_data["usdPrice"]).fillna(0)
+
+        relevant_columns = response_data.columns.tolist() + ["total_usd"]
+
+        # Only merge with response data if it's not empty
+        if response and len(response) > 0:
+            response_df = pd.DataFrame(response)
+
+            # response_blocks = response_df['block_number'].tolist()
+            # new_data = new_data.query("block_number == @response_blocks")
+
+            new_data = new_data.merge(
+                response_df,
+                on="block_number",
+                how="left",
+                suffixes=("", "_response"),
+            )
+
+            not_swap_df = new_data.query("category != 'token swap'")
+
+            if not_swap_df.empty:
+                logger.info("No non-swap data found in the new_data.")
+
+            extra_columns = ["airdrop", "receive"]
+            not_swap_df = not_swap_df.set_index("block_number")
+
+            transfer_data = not_swap_df.query("category not in @extra_columns")
+
+            if transfer_data.empty:
+                logger.info("No transfer data found in the not_swap_df.")
+            else:
+                transfer_data = pd.DataFrame(
+                    pd.DataFrame(transfer_data["erc20_transfers"].tolist())[0].tolist(),
+                    index=transfer_data.index,
+                )
+
+                usd_symbols = [
+                    col
+                    for col in transfer_data["token_symbol"].unique().tolist()
+                    if any(sub in col for sub in ["USD", "DAI"])
+                ]
+
+                transfer_data["value_formatted"] = transfer_data[
+                    "value_formatted"
+                ].astype("float64")
+
+                transfer_data["value_formatted"] = np.where(
+                    transfer_data["direction"] == "receive",
+                    -transfer_data["value_formatted"],
+                    transfer_data["value_formatted"],
+                )
+
+                not_swap_df["value_formatted"] = np.nan
+
+                transfer_data_agg = transfer_data.groupby(transfer_data.index).sum()
+
+                not_swap_df.loc[transfer_data_agg.index, "value_formatted"] = transfer_data_agg
+
+                not_swap_df = not_swap_df[not_swap_df["value_formatted"].isna() | ~not_swap_df.duplicated(subset="value_formatted")]
+
+                not_swap_df = not_swap_df.sort_values(
+                    ascending=True, by="blockTimestamp"
+                )
+                not_swap_df["value_aggregated"] = not_swap_df["value_formatted"].fillna(0).cumsum()
+
+                not_swap_df["formatted_total_usd"] = not_swap_df["total_usd"] + not_swap_df["value_aggregated"]
+                new_data = new_data.merge(
+                    not_swap_df["value_aggregated"],
+                    on="block_number",
+                    how="left",
+                )
+
+                new_data["value_aggregated"] = new_data["value_aggregated"].ffill()
+                new_data["formatted_total_usd"] = new_data["total_usd"] + new_data["value_aggregated"]
+                relevant_columns = response_data.columns.tolist() + ["total_usd", "value_aggregated"]
+        else:
+            # If no response data, set default values
+            logger.info("No response data provided, setting default values")
+            new_data["value_aggregated"] = np.nan
+            new_data["formatted_total_usd"] = new_data["total_usd"]
+            relevant_columns = response_data.columns.tolist() + ["total_usd", "value_aggregated"]
+
+        new_data = new_data[relevant_columns]
+        new_data = new_data.rename(columns={"block_number": "height"})
+        new_data = new_data.set_index("height")
+
+        return new_data
+
