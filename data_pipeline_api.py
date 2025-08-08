@@ -3,7 +3,9 @@ import logging
 import ccxt
 import pandas as pd
 import numpy as np
-from crypto_explorer import CcxtAPI, MoralisAPI
+import time
+
+from crypto_explorer import CcxtAPI, MoralisAPI, QuickNodeAPI
 from machine_learning.ml_pipeline import ModelPipeline
 
 # Configure logging
@@ -468,6 +470,263 @@ class DataPipelineAPI:
                     logger.error(f"Failed to save empty recommendations to database: {str(db_error)}")
             return empty_df
 
+    def update_onchain_data(self, update: bool = True, batch_size: int = 10000) -> pd.DataFrame:
+        """
+        Update Bitcoin onchain blockchain data.
+
+        Fetches new Bitcoin block statistics from QuickNode API starting from the last
+        recorded block height and saves to incremental parquet files.
+
+        Parameters
+        ----------
+        update : bool, default True
+            If True, saves processed data to parquet files. If False, returns
+            DataFrame without file update.
+        batch_size : int, default 10000
+            Number of blocks to process in each batch. Smaller batches for frequent updates.
+
+        Returns
+        -------
+        pd.DataFrame
+            DataFrame containing block statistics data with columns including
+            block height, fees, transaction data, and other blockchain metrics.
+            Index is 'height' (block number).
+
+        Notes
+        -----
+        New Bitcoin blocks are generated approximately every 10 minutes.
+        This method is designed for incremental updates rather than full syncing.
+        Uses sequential processing for Docker compatibility and resource efficiency.
+        """
+        logger.info("Starting onchain data update...")
+
+        try:
+            # Initialize QuickNode API
+            api_keys = [os.getenv(f"quicknode_endpoint_{x}") for x in range(1, 11)]
+            api_keys = [key for key in api_keys if key is not None]
+
+            if not api_keys:
+                logger.error("No QuickNode API keys found in environment variables")
+                return pd.DataFrame()
+
+            quant_node_api = QuickNodeAPI(api_keys, 0)
+
+            # Get current blockchain height
+            try:
+                highest_height = quant_node_api.get_blockchain_info()["blocks"]
+                logger.info(f"Current blockchain height: {highest_height}")
+            except Exception as e:
+                logger.error(f"Error getting blockchain info: {str(e)}")
+                return pd.DataFrame()
+
+            # Set up file paths
+            new_file_folder = "data/onchain/BTC/block_stats_fragments/incremental"
+
+            if not os.path.exists(new_file_folder):
+                os.makedirs(new_file_folder, exist_ok=True)
+                logger.info("Created incremental folder")
+
+            # Find existing data and determine last height
+            last_height = 0
+            new_file_path = f"{new_file_folder}/incremental_block_stats_0.parquet"
+
+            try:
+                # Try to read existing incremental files to find the latest
+                incremental_files = [f for f in os.listdir(new_file_folder) if f.startswith("incremental_block_stats_")]
+                if incremental_files:
+                    # Sort files by number and get the latest
+                    file_numbers = [int(f.split("_")[-1].split(".")[0]) for f in incremental_files]
+                    latest_file_num = max(file_numbers)
+                    latest_file = f"{new_file_folder}/incremental_block_stats_{latest_file_num}.parquet"
+
+                    try:
+                        latest_data = pd.read_parquet(latest_file)
+                        if not latest_data.empty:
+                            last_height = latest_data['height'].max() + 1
+                            logger.info(f"Found existing data, last height: {last_height - 1}")
+
+                            # Create new file for incremental updates
+                            new_file_number = latest_file_num + 1
+                            new_file_path = f"{new_file_folder}/incremental_block_stats_{new_file_number}.parquet"
+                    except Exception as e:
+                        logger.warning(f"Could not read latest file {latest_file}: {str(e)}")
+
+            except Exception as e:
+                logger.warning(f"Error finding existing files: {str(e)}")
+
+            # Calculate blocks to fetch (limit to batch_size for incremental updates)
+            blocks_to_fetch = min(highest_height - last_height, batch_size)
+
+            if blocks_to_fetch <= 0:
+                logger.info("No new blocks to fetch")
+                return pd.DataFrame()
+
+            logger.info(f"Fetching {blocks_to_fetch} blocks from height {last_height} to {last_height + blocks_to_fetch - 1}")
+
+            # Fetch block data sequentially (Docker-friendly)
+            start_time = time.perf_counter()
+
+            try:
+                batch_data = []
+                for block_height in range(last_height, last_height + blocks_to_fetch):
+                    try:
+                        block_stats = quant_node_api.get_block_stats(block_height)
+                        if block_stats:
+                            batch_data.append(block_stats)
+
+                        # Log progress every 10 blocks for user feedback
+                        if (block_height - last_height + 1) % 10 == 0 or block_height == last_height + blocks_to_fetch - 1:
+                            progress = block_height - last_height + 1
+                            logger.info(f"Progress: {progress}/{blocks_to_fetch} blocks fetched ({progress/blocks_to_fetch*100:.1f}%)")
+
+                    except Exception as e:
+                        logger.warning(f"Failed to fetch block {block_height}: {str(e)}")
+                        continue
+
+                if not batch_data:
+                    logger.warning("No block data received")
+                    return pd.DataFrame()
+
+                # Convert to DataFrame
+                block_df = pd.DataFrame(batch_data)
+
+                # Convert time to datetime
+                if 'time' in block_df.columns:
+                    block_df['time'] = pd.to_datetime(block_df['time'], unit='s')
+
+                elapsed_time = time.perf_counter() - start_time
+                blocks_per_second = len(batch_data) / elapsed_time if elapsed_time > 0 else 0
+
+                logger.info(f"Fetched {len(batch_data)} blocks in {elapsed_time:.2f} seconds ({blocks_per_second:.2f} blocks/sec)")
+                logger.info(f"Block range: {block_df['height'].min()} - {block_df['height'].max()}")
+
+                # Save to file if update is True
+                if update:
+                    try:
+                        block_df.to_parquet(new_file_path)
+                        logger.info(f"Saved onchain data to {new_file_path}")
+                    except Exception as e:
+                        logger.error(f"Error saving onchain data: {str(e)}")
+
+                return block_df.set_index('height') if 'height' in block_df.columns else block_df
+
+            except Exception as e:
+                logger.error(f"Error fetching block data: {str(e)}")
+                return pd.DataFrame()
+
+        except Exception as e:
+            logger.error(f"Error in update_onchain_data: {str(e)}")
+            import traceback
+            logger.error(f"Traceback: {traceback.format_exc()}")
+            return pd.DataFrame()
+
+    def run_full_pipeline(self, update: bool = True) -> dict:
+        """
+        Run the complete data pipeline.
+
+        Executes all pipeline steps in sequence: wallet transactions update,
+        wallet USD data update, BTC data update, model recommendations update,
+        and onchain blockchain data update.
+
+        Parameters
+        ----------
+        update : bool, default True
+            If True, saves all processed data to database/files. If False, returns
+            all DataFrames without database/file updates.
+
+        Returns
+        -------
+        dict
+            Dictionary containing all processed DataFrames and execution status.
+            Keys include:
+            - 'wallet_balances': wallet balance DataFrame
+            - 'wallet_usd': wallet USD DataFrame
+            - 'btc_data': BTC price DataFrame
+            - 'model_recommendations': recommendations DataFrame
+            - 'onchain_data': Bitcoin blockchain statistics DataFrame
+            - 'status': execution status ('success', 'partial_success', or 'error')
+            - 'errors': list of error messages if any step fails
+
+        Notes
+        -----
+        If any step fails, the pipeline continues with remaining steps and returns
+        partial_success status. Only returns error status if most steps fail.
+        """
+        logger.info("Starting full pipeline execution...")
+
+        results = {}
+        errors = []
+
+        # Step 1: Update wallet transactions
+        try:
+            logger.info("Step 1: Updating wallet transactions...")
+            wallet_data = self.get_wallet_transactions(update=update)
+            results["wallet_balances"] = wallet_data
+            logger.info("✓ Step 1 completed successfully")
+        except Exception as e:
+            error_msg = f"Step 1 (wallet transactions) failed: {str(e)}"
+            logger.error(error_msg)
+            errors.append(error_msg)
+            results["wallet_balances"] = pd.DataFrame()
+
+        # Step 2: Update wallet USD data
+        try:
+            logger.info("Step 2: Updating wallet USD data...")
+            wallet_usd = self.update_wallet_usd(update=update)
+            results["wallet_usd"] = wallet_usd
+            logger.info("✓ Step 2 completed successfully")
+        except Exception as e:
+            error_msg = f"Step 2 (wallet USD) failed: {str(e)}"
+            logger.error(error_msg)
+            errors.append(error_msg)
+            results["wallet_usd"] = pd.DataFrame()
+
+        # Step 3: Update BTC data
+        try:
+            logger.info("Step 3: Updating BTC data...")
+            btc_data = self.update_btc_data(update=update)
+            results["btc_data"] = btc_data
+            logger.info("✓ Step 3 completed successfully")
+        except Exception as e:
+            error_msg = f"Step 3 (BTC data) failed: {str(e)}"
+            logger.error(error_msg)
+            errors.append(error_msg)
+            results["btc_data"] = pd.DataFrame()
+
+        # Step 4: Update model recommendations
+        try:
+            logger.info("Step 4: Updating model recommendations...")
+            recommendations = self.update_model_recommendations(update=update)
+            results["model_recommendations"] = recommendations
+            logger.info("✓ Step 4 completed successfully")
+        except Exception as e:
+            error_msg = f"Step 4 (model recommendations) failed: {str(e)}"
+            logger.error(error_msg)
+            errors.append(error_msg)
+            results["model_recommendations"] = pd.DataFrame()
+
+        # Step 5: Update onchain data
+        try:
+            logger.info("Step 5: Updating onchain blockchain data...")
+            onchain_data = self.update_onchain_data(update=update)
+            results["onchain_data"] = onchain_data
+            logger.info("✓ Step 5 completed successfully")
+        except Exception as e:
+            error_msg = f"Step 5 (onchain data) failed: {str(e)}"
+            logger.error(error_msg)
+            errors.append(error_msg)
+            results["onchain_data"] = pd.DataFrame()
+
+        # Determine overall status
+        if not errors:
+            logger.info("Full pipeline execution completed successfully")
+            results["status"] = "success"
+        else:
+            logger.warning(f"Pipeline completed with {len(errors)} errors")
+            results["status"] = "partial_success" if len(errors) < 5 else "error"
+            results["errors"] = errors
+
+        return results
 
     def _process_wallet_data(self, token_balances: list, response: list) -> pd.DataFrame:
         """
