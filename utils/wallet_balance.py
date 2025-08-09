@@ -168,3 +168,25 @@ class WalletBalanceAnalyzer:
             if any(sub in col for sub in ["USD", "DAI"])
         ]
 
+    def _calculate_total_usd(
+        self, token_balance_df: pd.DataFrame
+    ) -> pd.DataFrame:
+        """
+        Calculate total USD value including WBTC conversion.
+
+        Parameters
+        ----------
+        token_balance_df : pd.DataFrame
+            The dataframe containing token balances.
+
+        Returns
+        -------
+        pd.DataFrame
+            Dataframe with added total_usd column.
+        """
+        usd_columns = self._get_usd_columns(token_balance_df)
+        token_balance_df["total_usd"] = token_balance_df[usd_columns].sum(
+            axis=1
+        ) + (token_balance_df["WBTC"] * token_balance_df["usdPrice"]).fillna(0)
+        return token_balance_df
+
