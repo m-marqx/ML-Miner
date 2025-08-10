@@ -332,7 +332,7 @@ def wallet_data(
     return wallet_df.sort_index()
 
 
-def process_balance(wallet_df: pd.DataFrame, indexes_to_drop: pd.Index): 
+def process_balance(wallet_df: pd.DataFrame, indexes_to_drop: pd.Index):
     result = (
         wallet_df.reset_index()["total_usd"]
         .pct_change()
