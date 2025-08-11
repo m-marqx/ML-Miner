@@ -475,7 +475,8 @@ class DataPipelineAPI:
         Update Bitcoin onchain blockchain data.
 
         Fetches new Bitcoin block statistics from QuickNode API starting from the last
-        recorded block height and saves to incremental parquet files.
+        recorded block height and appends to the current session file. Creates a new file
+        only when Docker container restarts (detected by absence of session marker).
 
         Parameters
         ----------
@@ -495,8 +496,8 @@ class DataPipelineAPI:
         Notes
         -----
         New Bitcoin blocks are generated approximately every 10 minutes.
-        This method is designed for incremental updates rather than full syncing.
-        Uses sequential processing for Docker compatibility and resource efficiency.
+        This method appends to the same file during a Docker session to avoid
+        creating too many small files. Uses sequential processing for Docker compatibility.
         """
         logger.info("Starting onchain data update...")
 
@@ -520,24 +521,29 @@ class DataPipelineAPI:
                 return pd.DataFrame()
 
             # Set up file paths
-            new_file_folder = "data/onchain/BTC/block_stats_fragments/incremental"
+            data_folder = "data/onchain/BTC/block_stats_fragments/incremental"
+            session_marker_file = f"{data_folder}/.session_marker"
 
-            if not os.path.exists(new_file_folder):
-                os.makedirs(new_file_folder, exist_ok=True)
+            if not os.path.exists(data_folder):
+                os.makedirs(data_folder, exist_ok=True)
                 logger.info("Created incremental folder")
 
-            # Find existing data and determine last height
+            # Determine if this is a new Docker session
+            is_new_session = not os.path.exists(session_marker_file)
+
+            # Find existing data and determine last height and current file
             last_height = 0
-            new_file_path = f"{new_file_folder}/incremental_block_stats_0.parquet"
+            current_file_path = None
 
             try:
-                # Try to read existing incremental files to find the latest
-                incremental_files = [f for f in os.listdir(new_file_folder) if f.startswith("incremental_block_stats_")]
+                # Get all incremental files
+                incremental_files = [f for f in os.listdir(data_folder) if f.startswith("incremental_block_stats_") and f.endswith(".parquet")]
+
                 if incremental_files:
                     # Sort files by number and get the latest
                     file_numbers = [int(f.split("_")[-1].split(".")[0]) for f in incremental_files]
                     latest_file_num = max(file_numbers)
-                    latest_file = f"{new_file_folder}/incremental_block_stats_{latest_file_num}.parquet"
+                    latest_file = f"{data_folder}/incremental_block_stats_{latest_file_num}.parquet"
 
                     try:
                         latest_data = pd.read_parquet(latest_file)
@@ -545,20 +551,40 @@ class DataPipelineAPI:
                             last_height = latest_data['height'].max() + 1
                             logger.info(f"Found existing data, last height: {last_height - 1}")
 
-                            # Create new file for incremental updates
-                            new_file_number = latest_file_num + 1
-                            new_file_path = f"{new_file_folder}/incremental_block_stats_{new_file_number}.parquet"
+                            # Use the same file if it's the same Docker session
+                            if is_new_session:
+                                # New session: create new file
+                                new_file_number = latest_file_num + 1
+                                current_file_path = f"{data_folder}/incremental_block_stats_{new_file_number}.parquet"
+                                logger.info(f"New Docker session detected, creating new file: {current_file_path}")
+                            else:
+                                # Same session: append to existing file
+                                current_file_path = latest_file
+                                logger.info(f"Same Docker session, appending to existing file: {current_file_path}")
                     except Exception as e:
                         logger.warning(f"Could not read latest file {latest_file}: {str(e)}")
 
+                if current_file_path is None:
+                    # No existing files found, create the first one
+                    current_file_path = f"{data_folder}/incremental_block_stats_0.parquet"
+                    logger.info(f"No existing files found, creating first file: {current_file_path}")
+
             except Exception as e:
                 logger.warning(f"Error finding existing files: {str(e)}")
+                current_file_path = f"{data_folder}/incremental_block_stats_0.parquet"
 
             # Calculate blocks to fetch (limit to batch_size for incremental updates)
             blocks_to_fetch = min(highest_height - last_height, batch_size)
 
             if blocks_to_fetch <= 0:
                 logger.info("No new blocks to fetch")
+                # Create/update session marker even if no new blocks
+                if update:
+                    try:
+                        with open(session_marker_file, 'w') as f:
+                            f.write(str(time.time()))
+                    except Exception as e:
+                        logger.warning(f"Could not create session marker: {str(e)}")
                 return pd.DataFrame()
 
             logger.info(f"Fetching {blocks_to_fetch} blocks from height {last_height} to {last_height + blocks_to_fetch - 1}")
@@ -588,27 +614,44 @@ class DataPipelineAPI:
                     return pd.DataFrame()
 
                 # Convert to DataFrame
-                block_df = pd.DataFrame(batch_data)
+                new_block_df = pd.DataFrame(batch_data)
 
                 # Convert time to datetime
-                if 'time' in block_df.columns:
-                    block_df['time'] = pd.to_datetime(block_df['time'], unit='s')
+                if 'time' in new_block_df.columns:
+                    new_block_df['time'] = pd.to_datetime(new_block_df['time'], unit='s')
 
                 elapsed_time = time.perf_counter() - start_time
                 blocks_per_second = len(batch_data) / elapsed_time if elapsed_time > 0 else 0
 
                 logger.info(f"Fetched {len(batch_data)} blocks in {elapsed_time:.2f} seconds ({blocks_per_second:.2f} blocks/sec)")
-                logger.info(f"Block range: {block_df['height'].min()} - {block_df['height'].max()}")
+                logger.info(f"Block range: {new_block_df['height'].min()} - {new_block_df['height'].max()}")
 
                 # Save to file if update is True
                 if update:
                     try:
-                        block_df.to_parquet(new_file_path)
-                        logger.info(f"Saved onchain data to {new_file_path}")
+                        # Check if we need to append or create new file
+                        if os.path.exists(current_file_path) and not is_new_session:
+                            # Append to existing file
+                            existing_data = pd.read_parquet(current_file_path)
+                            combined_data = pd.concat([existing_data, new_block_df], ignore_index=True)
+                            # Remove duplicates based on height (just in case)
+                            combined_data = combined_data.drop_duplicates(subset=['height'], keep='last')
+                            combined_data = combined_data.sort_values('height')
+                            combined_data.to_parquet(current_file_path)
+                            logger.info(f"Appended {len(new_block_df)} blocks to existing file: {current_file_path}")
+                        else:
+                            # Create new file or overwrite
+                            new_block_df.to_parquet(current_file_path)
+                            logger.info(f"Saved {len(new_block_df)} blocks to new file: {current_file_path}")
+                        
+                        # Create/update session marker
+                        with open(session_marker_file, 'w') as f:
+                            f.write(str(time.time()))
+                            
                     except Exception as e:
                         logger.error(f"Error saving onchain data: {str(e)}")
 
-                return block_df.set_index('height') if 'height' in block_df.columns else block_df
+                return new_block_df.set_index('height') if 'height' in new_block_df.columns else new_block_df
 
             except Exception as e:
                 logger.error(f"Error fetching block data: {str(e)}")
