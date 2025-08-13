@@ -280,6 +280,7 @@ def model_creation(
     cutoff_point: float | None = None,
     side: int = 1,
     dev: bool = False,
+    get_model_configs: bool = False,
 ):
     """
     Calculate and create the model based on the input parameters.
@@ -624,7 +625,7 @@ def model_creation(
     df_columns = data_frame.columns.tolist()
     features = [x for x in df_columns if "feat" in x]
 
-    mh2, _, _, _, _, _, _, _, _, all_y, index_splits = calculate_model(
+    mh2, model, _, _, _, _, _, _, all_x, all_y, index_splits = calculate_model(
         dataset=data_frame,
         feats=features,
         test_index=test_index,
@@ -636,6 +637,9 @@ def model_creation(
         dev=dev,
         **hyperparams,
     )
+
+    if get_model_configs:
+        return model, all_x
 
     mh2["Liquid_Result"] = np.where(
         mh2["Predict"] != side,
