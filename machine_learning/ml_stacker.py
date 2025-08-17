@@ -10,6 +10,7 @@ class ModelStacker:
         side,
         cutoff_point,
         best_model_dict: dict,
+        verbose: bool = False,
     ):
         self.dataset = dataset
         self.onchain_data = onchain_data
@@ -22,3 +23,4 @@ class ModelStacker:
         self.side = side
         self.cutoff_point = cutoff_point
         self.best_model_dict = best_model_dict
+        self.verbose = verbose
