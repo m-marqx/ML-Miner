@@ -1,4 +1,4 @@
-class ModelStacker:
+class MLStacker:
     def __init__(
         self,
         dataset,
