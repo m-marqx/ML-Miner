@@ -324,8 +324,31 @@ class DataPipelineAPI:
         new_data = ccxt_api.get_all_klines().to_OHLCV().data_frame
         new_data['updatedAt'] = pd.Timestamp.now(tz='UTC')
         btc = new_data.combine_first(database_df).drop_duplicates()
+        base_data = pd.read_parquet("data/cryptodata/dynamic_btc.parquet").iloc[:-1]
 
         if update:
+            if btc.empty:
+                raise ValueError(
+                    "BTC data is empty. Please check the database connection"
+                )
+
+            try:
+                pd.testing.assert_frame_equal(
+                    base_data, btc.loc[
+                        base_data.index.tolist(),
+                        base_data.columns.tolist()
+                    ]
+                )
+            except Exception as e:
+                btc = base_data.combine_first(btc)
+                pd.testing.assert_frame_equal(
+                    base_data, btc.loc[
+                        base_data.index.tolist(),
+                        base_data.columns.tolist()
+                    ]
+                )
+                logger.warning(f"Error occurred while asserting BTC data: {e}")
+
             btc.to_sql(
                 "btc",
                 con=self.database_url,
