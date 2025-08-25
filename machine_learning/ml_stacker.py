@@ -5,6 +5,7 @@ import pandas as pd
 from machine_learning.model_creator import ModelCreator
 from machine_learning.model_metrics import ModelMetrics
 from machine_learning.ml_utils import calculate_returns
+from machine_learning.adjust_predicts import adjust_predict_one_side
 
 
 class MLStacker:
@@ -26,6 +27,12 @@ class MLStacker:
         self.test_index = test_index
         self.train_in_middle = train_in_middle
         self.target_series = self.dataset["Target"]
+        self.adj_targets = adjust_predict_one_side(
+            self.target_series,
+            max_trades,
+            off_days,
+            side,
+        )
         self.y_true = self.dataset['Target_bin']
         self.max_trades = max_trades
         self.off_days = off_days
