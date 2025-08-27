@@ -27,18 +27,19 @@ class MLStacker:
         self.test_index = test_index
         self.train_in_middle = train_in_middle
         self.target_series = self.dataset["Target"]
+        self.y_true = self.dataset['Target_bin']
         self.adj_targets = adjust_predict_one_side(
-            self.target_series,
+            self.y_true,
             max_trades,
             off_days,
             side,
         )
-        self.y_true = self.dataset['Target_bin']
         self.max_trades = max_trades
         self.off_days = off_days
         self.side = side
         self.cutoff_point = cutoff_point
         self.best_model_dict = best_model_dict
+
         self.verbose = verbose
         self.model_creator = ModelCreator(
             dataset, onchain_data, test_index, verbose, train_in_middle
