@@ -45,6 +45,8 @@ class MLStacker:
             dataset, onchain_data, test_index, verbose, train_in_middle
         )
 
+        self.model_metrics = None
+
         self.empty_dict = {
             "onchain_model_1_hyperparameters": None,
             "onchain_model_2_hyperparameters": None,
