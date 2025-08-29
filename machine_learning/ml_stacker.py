@@ -85,3 +85,24 @@ class MLStacker:
             "off_days": None,
         }
 
+    def run_model_onchain(self):
+        indexes = self.best_model_dict['all_x'].index
+        hyperparams = self.model_creator.beta_generate_hyperparameters({})
+        params = self.model_creator.generate_onchain_features()
+        self.model_creator.create_multiple_onchain_features(params)
+        model_dict = self.model_creator.get_model(
+            max_trades=self.max_trades,
+            off_days=self.off_days,
+            side=self.side,
+            cutoff_point=self.cutoff_point,
+            **hyperparams
+        )
+        feat_columns = [col for col in self.model_creator.features_dataset.columns if col.endswith('_feat')]
+        return {
+            "model": model_dict[0],
+            "all_x": self.model_creator.features_dataset.loc[indexes, feat_columns],
+            "all_y": model_dict[2],
+            "index_splits": model_dict[3],
+            "hyperparams": hyperparams,
+            "feat_params": params,
+    }
