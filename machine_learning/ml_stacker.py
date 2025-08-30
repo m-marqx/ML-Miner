@@ -22,6 +22,71 @@ class MLStacker:
         best_model_dict: dict,
         verbose: bool = False,
     ):
+        """
+        Initialize the MLStacker class.
+
+        Parameters
+        ----------
+        dataset : pd.DataFrame
+            The main dataset containing features and target columns.
+        onchain_data : pd.DataFrame
+            Additional on-chain data to be used for modeling.
+        test_index : int or list
+            Index or indices specifying the test set split.
+        train_in_middle : bool
+            Whether to train the model using a middle split of the
+            dataset.
+        max_trades : int
+            Maximum number of trades allowed in the strategy.
+        off_days : int
+            Number of days to remain inactive after a trade.
+        side : str
+            Trading side, e.g., 'buy' or 'sell'.
+        cutoff_point : float
+            Cutoff threshold for predictions or filtering.
+        best_model_dict : dict
+            Dictionary containing the best model parameters and
+            configurations.
+        verbose : bool, optional
+            If True, enables verbose output during model training and
+            evaluation
+            (default: False).
+
+        Attributes
+        ----------
+        dataset : pd.DataFrame
+            Stores the input dataset.
+        onchain_data : pd.DataFrame
+            Stores the on-chain data.
+        test_index : int or list
+            Stores the test index.
+        train_in_middle : bool
+            Stores the train-in-middle flag.
+        target_series : pd.Series
+            Target values from the dataset.
+        y_true : pd.Series
+            Binary target values from the dataset.
+        adj_targets : np.ndarray
+            Adjusted target values based on trading constraints.
+        max_trades : int
+            Stores the maximum trades.
+        off_days : int
+            Stores the off days.
+        side : str
+            Stores the trading side.
+        cutoff_point : float
+            Stores the cutoff point.
+        best_model_dict : dict
+            Stores the best model configuration.
+        verbose : bool
+            Stores the verbosity flag.
+        model_creator : ModelCreator
+            Instance for creating models.
+        model_metrics : None or dict
+            Stores model metrics after evaluation.
+        empty_dict : dict
+            Template dictionary for storing model results and metrics.
+        """
         self.dataset = dataset
         self.onchain_data = onchain_data
         self.test_index = test_index
