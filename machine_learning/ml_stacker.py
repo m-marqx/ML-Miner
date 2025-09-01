@@ -172,6 +172,90 @@ class MLStacker:
             "feat_params": params,
     }
 
+    def train_model_onchain(
+        self,
+        hyperparams,
+        params,
+    ):
+        """
+        Train a model using on-chain feature generation and return the
+        trained model along with corresponding feature/label datasets
+        and metadata.
+
+        Parameters
+        ----------
+        hyperparams : dict
+            Hyperparameters forwarded to self.model_creator.get_model()
+            used to configure the model training/fitting procedure
+            (e.g., model-specific settings, regularization, etc.).
+        params : dict
+            Parameters passed to
+            self.model_creator.create_multiple_onchain_features() that
+            control how on-chain features are generated or updated
+            (e.g., window sizes, aggregation rules).
+
+        Returns
+        -------
+        dict
+            A dictionary containing the following keys:
+            - "model": object
+                The trained model returned as the first element of
+                self.model_creator.get_model(...).
+            - "all_x": pandas.DataFrame
+                DataFrame of feature columns (columns whose names end
+                with "_feat") selected from
+                self.model_creator.features_dataset and filtered to the
+                indexes originally stored in
+                self.best_model_dict['all_x'].
+            - "all_y": array-like or pandas.Series
+                Target labels returned as the third element of
+                self.model_creator.get_model(...).
+            - "index_splits": object
+                Index split information (e.g., train/validation/test
+                index sets) returned as the fourth element of
+                self.model_creator.get_model(...).
+            - "hyperparams": dict
+                The same hyperparams argument passed through for
+                traceability.
+            - "feat_params": dict
+                The same params argument passed through
+                (feature-generation parameters).
+
+        Raises
+        ------
+        KeyError
+            If 'all_x' is not present in self.best_model_dict.
+        AttributeError
+            If self.model_creator does not implement the required
+            methods or attributes (create_multiple_onchain_features,
+            get_model, or features_dataset).
+        IndexError
+            If the stored indexes in self.best_model_dict['all_x'].index
+            are not present in self.model_creator.features_dataset.
+        """
+        indexes = self.best_model_dict['all_x'].index
+
+        self.model_creator.create_multiple_onchain_features(params)
+
+        model_dict = self.model_creator.get_model(
+            max_trades=self.max_trades,
+            off_days=self.off_days,
+            side=self.side,
+            cutoff_point=self.cutoff_point,
+            **hyperparams
+        )
+
+        feat_columns = [col for col in self.model_creator.features_dataset.columns if col.endswith('_feat')]
+
+        return {
+            "model": model_dict[0],
+            "all_x": self.model_creator.features_dataset.loc[indexes, feat_columns],
+            "all_y": model_dict[2],
+            "index_splits": model_dict[3],
+            "hyperparams": hyperparams,
+            "feat_params": params,
+    }
+
     def create_weighted_models(self):
         """
         Creates and returns two weighted on-chain models.
