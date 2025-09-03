@@ -2,6 +2,8 @@ from typing import Literal
 
 import numpy as np
 import pandas as pd
+from machine_learning.model_builder import adjust_max_trades
+
 
 class DataHandler:
     """
@@ -318,3 +320,180 @@ def get_recommendation(
     )
 
     return positions_df["Recommendation"]
+
+def calculate_returns(
+    target: pd.Series,
+    y_pred_probs: pd.Series,
+    y_true: pd.Series,
+    fee: int = 0,
+    off_days: int = 7,
+    max_trades: int = 3,
+    side: int = 1,
+    cutoff_point: int = 5,
+):
+    """
+    Calculate trading performance metrics from predicted probabilities
+    and true outcomes. This function builds a returns DataFrame from
+    model prediction probabilities and the realized target series,
+    applies a cutoff to convert probabilities into binary predictions,
+    computes gross and fee-aware (liquid) returns, drawdowns and
+    drawdown durations, and finally adjusts the resulting trade sequence
+    using adjust_max_trades
+    (e.g. to enforce off-days / max concurrent trades).
+
+    Parameters
+    ----------
+    target : pandas.Series
+        Series of realized target values aligned to the same index as
+        the prediction series. If all values are > 0 the function will
+        first convert values that represent gross multipliers
+        (e.g. 1.01) into returns by subtracting 1.
+    y_pred_probs : pandas.Series
+        Series of predicted probabilities (or scores) used to form the
+        trading signal. Used to compute the threshold/cutoff and as a
+        reference column in the returned DataFrame.
+    y_true : pandas.Series
+        Series of true binary labels (e.g. 1 for event, 0 otherwise).
+        Only used to create a binary `y_true` column in the result for
+        comparison/analysis.
+    fee : int or float, optional
+        Transaction fee expressed in percent (e.g. 0.1 for 0.1%).
+        (default: 0)
+    off_days : int, optional
+        Number of days to enforce between trades when calling
+        adjust_max_trades. Passed through to adjust_max_trades.
+        (default: 7)
+    max_trades : int, optional
+        Maximum number of simultaneous/overlapping trades allowed. Passed to
+        adjust_max_trades.
+        (default: 3)
+    side : int, optional
+        Trade side filter. If set to 1 (default) only entries where the
+        predicted side equals 1 keep their liquid result; other sides
+        have Liquid_Result zeroed. Use -1 to select the opposite side
+        when relevant.
+        (default: 1)
+    cutoff_point : int or None, optional
+        If truthy, defines a percentile (0 < cutoff_point < 100)
+        applied to the subset of predictions above the initial median
+        cutoff to determine the final cutoff threshold. Example:
+        cutoff_point=5 sets the cutoff to the 5th percentile of
+        predictions that are greater than the median. If falsy
+        (e.g. 0 or None) the initial cutoff is the median of
+        y_pred_probs.
+        (default: 5)
+
+    Returns
+    -------
+    pandas.DataFrame
+        A DataFrame (the same object passed to adjust_max_trades)
+        containing at least the following columns:
+        - y_pred_probs: original prediction scores
+        - Predict: binary prediction (1 if score > cutoff else 0)
+        - y_true: binary mapped true labels (0/1)
+        - target_Return: aligned numeric returns from `target`
+        - Position: shifted Predict (previous period signal)
+        - Result: gross return when Predict==1 (target_Return * Predict)
+        - Liquid_Result: Result net of fee where applicable, otherwise
+        0; finally filtered by `side`
+        - Period_Return_cum: cumulative sum of target_Return
+        - Total_Return: cumulative gross return (Result.cumsum() + 1)
+        - Liquid_Return: cumulative fee-adjusted return
+        (Liquid_Result.cumsum() + 1)
+        - max_Liquid_Return: rolling expanding maximum of Liquid_Return
+        (window 365)
+        - drawdown: drawdown series computed from Liquid_Return
+        vs max_Liquid_Return
+        - drawdown_duration: number of consecutive periods in drawdown
+        The returned DataFrame is the output of adjust_max_trades(...),
+        so any  additional columns produced by that function may also
+        be present.
+
+    Raises
+    ------
+    ValueError
+        If `cutoff_point` is provided and is not strictly between 0
+        and 100.
+    """
+    target_series = target.copy()
+
+    if target_series.min() > 0:
+        target_series = target_series - 1
+
+    predict = y_pred_probs.copy()
+
+    cutoff = np.median(predict)
+
+    if cutoff_point:
+        if cutoff_point >= 100:
+            raise ValueError("Cutoff point must be less than 100")
+        if cutoff_point <= 0:
+            raise ValueError("Cutoff point must be greater than 0")
+
+        predict_mask = predict > cutoff
+
+        cutoff = np.percentile(predict[predict_mask], cutoff_point)
+
+    df_returns = pd.DataFrame(
+        {
+            "y_pred_probs": y_pred_probs,
+        }
+    )
+
+    df_returns["Predict"] = np.where(y_pred_probs > cutoff, 1, 0)
+    df_returns["y_true"] = np.where(y_true == 1, 1, 0)
+
+    fee_pct = fee / 100
+
+    target_return = target_series.reindex(df_returns.index)
+
+    df_returns["target_Return"] = target_return
+
+    df_returns["Position"] = df_returns["Predict"].shift().fillna(0)
+
+    df_returns["Result"] = df_returns["target_Return"] * df_returns["Predict"]
+
+    df_returns["Liquid_Result"] = np.where(
+        (df_returns["Predict"] != 0) & (df_returns["Result"].abs() != 1),
+        df_returns["Result"] - fee_pct,
+        0,
+    )
+
+    df_returns["Period_Return_cum"] = (df_returns["target_Return"]).cumsum()
+
+    df_returns["Total_Return"] = df_returns["Result"].cumsum() + 1
+    df_returns["Liquid_Return"] = df_returns["Liquid_Result"].cumsum() + 1
+
+    df_returns["max_Liquid_Return"] = (
+        df_returns["Liquid_Return"].expanding(365).max()
+    )
+
+    df_returns["max_Liquid_Return"] = np.where(
+        df_returns["max_Liquid_Return"].diff(),
+        np.nan,
+        df_returns["max_Liquid_Return"],
+    )
+
+    df_returns["drawdown"] = (
+        1 - df_returns["Liquid_Return"] / df_returns["max_Liquid_Return"]
+    ).fillna(0)
+
+    drawdown_positive = df_returns["drawdown"] > 0
+
+    df_returns["drawdown_duration"] = drawdown_positive.groupby(
+        (~drawdown_positive).cumsum()
+    ).cumsum()
+
+    df_returns["Liquid_Result"] = np.where(
+        df_returns["Predict"] != side,
+        0,
+        df_returns["Liquid_Result"],
+    )
+
+    return adjust_max_trades(
+        data_set=df_returns,
+        off_days=off_days,
+        max_trades=max_trades,
+        pct_adj=0.5,
+        side=side,
+    )
