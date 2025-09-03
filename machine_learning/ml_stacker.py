@@ -172,7 +172,7 @@ class MLStacker:
             "feat_params": params,
     }
 
-    def train_model_onchain(
+    def train_onchain_model(
         self,
         hyperparams,
         params,
