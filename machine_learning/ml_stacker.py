@@ -237,7 +237,7 @@ class MLStacker:
             "index_splits": model_dict[3],
             "hyperparams": hyperparams,
             "feat_params": params,
-    }
+        }
 
     def create_weighted_models(self):
         """
