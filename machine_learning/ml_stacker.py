@@ -256,3 +256,25 @@ class MLStacker:
         onchain_model_1 = self.run_model_onchain()
         onchain_model_2 = self.run_model_onchain()
         return onchain_model_1, onchain_model_2
+
+    def get_positive_proba(self, model_dict):
+        """
+        Extract positive class probabilities from a trained model.
+
+        Parameters
+        ----------
+        model_dict : dict
+            Dictionary containing the trained model and feature data.
+            Expected keys:
+                - 'model': trained classifier with predict_proba method
+                - 'all_x': pandas DataFrame containing input features
+
+        Returns
+        -------
+        pandas.Series
+            Series containing probabilities for the positive class
+            (class 1), indexed by the same index as the input features.
+        """
+        proba = model_dict['model'].predict_proba(model_dict['all_x'])
+        return pd.Series(proba[:, 1], index=model_dict['all_x'].index)
+
