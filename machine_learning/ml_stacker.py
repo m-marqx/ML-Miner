@@ -278,3 +278,51 @@ class MLStacker:
         proba = model_dict['model'].predict_proba(model_dict['all_x'])
         return pd.Series(proba[:, 1], index=model_dict['all_x'].index)
 
+    def create_weighted_predictions(
+        self,
+        model_dict_1: dict,
+        model_dict_2: dict,
+        weights: None | list = None,
+    ):
+        """
+        Create weighted ensemble predictions from multiple models.
+        Combines predictions from the best model and two additional test
+        models using specified weights to create a weighted ensemble
+        prediction.
+
+        Parameters
+        ----------
+        model_dict_1 : dict
+            Dictionary containing the first test model and
+            its predictions.
+        model_dict_2 : dict
+            Dictionary containing the second test model and
+            its predictions.
+        weights : list or None, optional
+            List of three weights for [best_model, model_1, model_2].
+
+            Default is [0.7, 0.15, 0.15].
+        Returns
+        -------
+        pandas.DataFrame
+            DataFrame containing individual weighted probabilities
+            and their sum in 'summed_proba' column.
+        """
+        weights = weights or [0.7, 0.15, 0.15]
+
+        best_model = (
+            self.get_positive_proba(self.best_model_dict) * weights[0]
+        ).rename("best_model")
+        test_model_1 = (
+            self.get_positive_proba(model_dict_1) * weights[1]
+        ).rename("test_model_2")
+        test_model_2 = (
+            self.get_positive_proba(model_dict_2) * weights[2]
+        ).rename("test_model_3")
+
+        sum_probas = pd.concat(
+            [best_model, test_model_1, test_model_2], axis=1
+        )
+
+        sum_probas["summed_proba"] = sum_probas.sum(axis=1)
+        return sum_probas
