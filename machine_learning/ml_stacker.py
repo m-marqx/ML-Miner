@@ -326,3 +326,178 @@ class MLStacker:
 
         sum_probas["summed_proba"] = sum_probas.sum(axis=1)
         return sum_probas
+
+    def mine_onchain_model(self, weights: None | list = None):
+        """
+        Mine and evaluate a weighted ensemble of on-chain models.
+
+        This method creates two on-chain models, combines their
+        predictions using specified weights, calculates trading returns,
+        and evaluates performance metrics. If evaluation fails due to
+        poor performance or errors, returns empty results.
+
+        Parameters
+        ----------
+        weights : list or None, optional
+            List of three weights for [best_model, model_1, model_2].
+            Default is [0.7, 0.15, 0.15].
+
+        Returns
+        -------
+        dict
+            Dictionary containing model hyperparameters, feature
+            parameters, performance metrics, accumulated returns,
+            drawdowns, trading statistics, and evaluation metadata.
+            Returns empty_dict if models fail performance thresholds
+            or evaluation encounters errors.
+
+        Raises
+        ------
+        Exception
+            Re-raises any exception encountered during model evaluation
+            with additional context about the failed models'
+            hyperparameters and feature parameters.
+        """
+        start = time.perf_counter()
+        weights = weights or [0.7, 0.15, 0.15]
+        onchain_model_1, onchain_model_2 = self.create_weighted_models()
+
+        sum_probas = self.create_weighted_predictions(
+            onchain_model_1,
+            onchain_model_2,
+            weights=weights,
+        )
+
+        target_rollback = -self.off_days
+
+        results = calculate_returns(
+            target=self.dataset["Target"].iloc[:target_rollback],
+            y_pred_probs=sum_probas["summed_proba"].iloc[:target_rollback],
+            y_true=self.y_true.iloc[:target_rollback],
+            max_trades=self.max_trades,
+            off_days=self.off_days,
+            side=self.side,
+            cutoff_point=self.cutoff_point,
+        )
+
+        try:
+            model_dates_interval = pd.Interval(
+                results.index[0],
+                results.index[-1],
+                closed="both",
+            )
+
+            self.model_metrics = ModelMetrics(
+                self.train_in_middle,
+                self.best_model_dict["index_split"],
+                results,
+                self.test_index,
+            )
+
+            accumulated_returns = (
+                self.model_metrics.calculate_accumulated_returns("all")
+            )
+
+            if min(accumulated_returns) <= 1:
+                return self.empty_dict
+
+            linear_return_test = accumulated_returns[0]
+            linear_return_val = accumulated_returns[1]
+            exponential_return_test = accumulated_returns[2]
+            exponential_return_val = accumulated_returns[3]
+
+            test_buys, val_buys = (
+                self.model_metrics.calculate_model_recommendations()
+            )
+
+            metrics_results = self.model_metrics.calculate_result_metrics(
+                self.y_true,
+                7,
+            )
+
+            if min(metrics_results["precisions"]) < 0.52:
+                return self.empty_dict
+
+            total_operations, total_operations_pct = (
+                self.model_metrics.calculate_total_operations(
+                    test_buys=test_buys,
+                    val_buys=val_buys,
+                    max_trades=self.max_trades,
+                    off_days=self.off_days,
+                    side=self.side,
+                )
+            )
+
+            drawdowns = self.model_metrics.calculate_drawdowns()
+
+            return_ratios = self.model_metrics.calculate_result_ratios()
+
+            support_diffs = self.model_metrics.calculate_result_support(
+                self.adj_targets, self.side
+            )
+
+            # get the results from the bear market that started in 2022
+            bearmarket_2022 = results.loc["2021-08-11":"2023-01-01"]
+
+            r2_test, r2_val, ols_coef_test, ols_coef_val = (
+                self.model_metrics.set_results_test(
+                    bearmarket_2022
+                ).calculate_ols_metrics()
+            )
+
+            return {
+                "onchain_model_1_hyperparameters": onchain_model_1[
+                    "hyperparams"
+                ],
+                "onchain_model_2_hyperparameters": onchain_model_2[
+                    "hyperparams"
+                ],
+                "onchain_model_1_features": onchain_model_1["feat_params"],
+                "onchain_model_2_features": onchain_model_2["feat_params"],
+                "weights": weights,
+                "metrics_results": [metrics_results],
+                "model_dates_interval": model_dates_interval,
+                "linear_accumulated_return_test": linear_return_test,
+                "linear_accumulated_return_val": linear_return_val,
+                "exponential_accumulated_return_test": exponential_return_test,
+                "exponential_accumulated_return_val": exponential_return_val,
+                "drawdown_full_test": drawdowns[0],
+                "drawdown_full_val": drawdowns[1],
+                "drawdown_adj_test": drawdowns[2],
+                "drawdown_adj_val": drawdowns[3],
+                "expected_return_test": metrics_results[
+                    "expected_return_test"
+                ],
+                "expected_return_val": metrics_results["expected_return_val"],
+                "precisions_test": metrics_results["precisions_test"],
+                "precisions_val": metrics_results["precisions_val"],
+                "support_diff_test": support_diffs[0],
+                "support_diff_val": support_diffs[1],
+                "total_operations_test": total_operations[0],
+                "total_operations_val": total_operations[1],
+                "total_operations_pct_test": total_operations_pct[0],
+                "total_operations_pct_val": total_operations_pct[1],
+                "r2_in_2023": r2_test,
+                "r2_val": r2_val,
+                "ols_coef_2022": ols_coef_test,
+                "ols_coef_val": ols_coef_val,
+                "test_index": self.test_index,
+                "train_in_middle": self.train_in_middle,
+                "total_time": time.perf_counter() - start,
+                "return_ratios": return_ratios,
+                "side": self.side,
+                "max_trades": self.max_trades,
+                "off_days": self.off_days,
+            }
+
+        except Exception as e:
+            raise type(e)(
+                f"Error creating model: {e}"
+                + "\nFirst On-chain Model:"
+                + f"\n{onchain_model_1['hyperparams']}"
+                + f"\n{onchain_model_1['feat_params']}"
+                + "\nSecond On-chain Model:"
+                + f"\n{onchain_model_2['hyperparams']}"
+                + f"\n{onchain_model_2['feat_params']}"
+            ) from e
+
