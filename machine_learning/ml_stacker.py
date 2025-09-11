@@ -501,3 +501,163 @@ class MLStacker:
                 + f"\n{onchain_model_2['feat_params']}"
             ) from e
 
+    def calculate_result_metrics(
+        self,
+        results,
+    ):
+        """
+        Calculate comprehensive model performance metrics and statistics.
+
+        This method computes various performance metrics including
+        accumulated returns, drawdowns, precision scores, trading
+        operations, and regression statistics for model evaluation.
+
+        Parameters
+        ----------
+        results : pd.DataFrame
+            DataFrame containing model results with datetime index
+            and performance data for metric calculations.
+
+        Returns
+        -------
+        dict
+            Dictionary containing comprehensive model metrics:
+            - metrics_results: list with calculated metric results
+            - model_dates_interval: pd.Interval of result date range
+            - linear/exponential_accumulated_return_test/val: float
+                Accumulated returns for test and validation sets
+            - drawdown_full/adj_test/val: float
+                Maximum drawdown values for different configurations
+            - expected_return_test/val: float
+                Expected return values for test and validation
+            - precisions_test/val: float
+                Precision scores for test and validation sets
+            - support_diff_test/val: float
+                Support difference metrics
+            - total_operations_test/val: int
+                Total number of trading operations
+            - total_operations_pct_test/val: float
+                Percentage of total operations
+            - r2_in_2023/val: float
+                R-squared values for 2023 and validation periods
+            - ols_coef_2022/val: float
+                OLS coefficients for 2022 and validation periods
+            - test_index: int/list
+                Test index configuration
+            - train_in_middle: bool
+                Training configuration flag
+            - return_ratios: dict
+                Calculated return ratio metrics
+            - side/max_trades/off_days: str/int
+                Trading configuration parameters
+
+            Returns empty_dict if accumulated returns <= 1 or
+            minimum precision < 0.52.
+        """
+        model_dates_interval = pd.Interval(
+            results.index[0],
+            results.index[-1],
+            closed='both',
+        )
+
+        self.model_metrics = ModelMetrics(
+            self.train_in_middle,
+            self.best_model_dict["index_split"],
+            results,
+            self.test_index,
+        )
+
+        accumulated_returns = (
+            self.model_metrics.calculate_accumulated_returns("all")
+        )
+
+        if min(accumulated_returns) <= 1:
+            return self.empty_dict
+
+        linear_return_test = accumulated_returns[0]
+        linear_return_val = accumulated_returns[1]
+        exponential_return_test = accumulated_returns[2]
+        exponential_return_val = accumulated_returns[3]
+
+        test_buys, val_buys = (
+            self.model_metrics.calculate_model_recommendations()
+        )
+
+        metrics_results = self.model_metrics.calculate_result_metrics(
+            self.y_true,
+            7,
+        )
+
+        if min(metrics_results["precisions"]) < 0.52:
+            return self.empty_dict
+
+        total_operations, total_operations_pct = (
+            self.model_metrics.calculate_total_operations(
+                test_buys=test_buys,
+                val_buys=val_buys,
+                max_trades=self.max_trades,
+                off_days=self.off_days,
+                side=self.side,
+            )
+        )
+
+        drawdowns = self.model_metrics.calculate_drawdowns()
+
+        return_ratios = self.model_metrics.calculate_result_ratios()
+
+        support_diffs = (
+            self.model_metrics
+            .calculate_result_support(self.adj_targets, self.side)
+        )
+
+        # get the results from the bear market that started in 2022
+        bearmarket_2022 = results.loc["2021-08-11":"2023-01-01"]
+
+        r2_test, r2_val, ols_coef_test, ols_coef_val = (
+            self.model_metrics.set_results_test(
+                bearmarket_2022
+            ).calculate_ols_metrics()
+        )
+
+        return {
+            "metrics_results": [metrics_results],
+            "model_dates_interval": model_dates_interval,
+
+            "linear_accumulated_return_test": linear_return_test,
+            "linear_accumulated_return_val": linear_return_val,
+
+            "exponential_accumulated_return_test": exponential_return_test,
+            "exponential_accumulated_return_val": exponential_return_val,
+
+            "drawdown_full_test": drawdowns[0],
+            "drawdown_full_val": drawdowns[1],
+            "drawdown_adj_test": drawdowns[2],
+            "drawdown_adj_val": drawdowns[3],
+
+            "expected_return_test": metrics_results["expected_return_test"],
+            "expected_return_val": metrics_results["expected_return_val"],
+
+            "precisions_test": metrics_results["precisions_test"],
+            "precisions_val": metrics_results["precisions_val"],
+
+            "support_diff_test": support_diffs[0],
+            "support_diff_val": support_diffs[1],
+
+            "total_operations_test": total_operations[0],
+            "total_operations_val": total_operations[1],
+            "total_operations_pct_test": total_operations_pct[0],
+            "total_operations_pct_val": total_operations_pct[1],
+
+            "r2_in_2023": r2_test,
+            "r2_val": r2_val,
+
+            "ols_coef_2022": ols_coef_test,
+            "ols_coef_val": ols_coef_val,
+
+            "test_index": self.test_index,
+            "train_in_middle": self.train_in_middle,
+            "return_ratios": return_ratios,
+            "side": self.side,
+            "max_trades": self.max_trades,
+            "off_days": self.off_days,
+        }
