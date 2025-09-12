@@ -82,15 +82,18 @@ class DataHandler:
         if isinstance(self.data_frame, pd.Series):
             self.data_frame = pd.DataFrame(self.data_frame)
 
-        self.data_frame['Return'] = self.data_frame["close"].pct_change(length) + 1
+        self.data_frame["Return"] = (
+            self.data_frame["close"].pct_change(length) + 1
+        )
         self.data_frame["Target"] = self.data_frame["Return"].shift(-length)
         self.data_frame["Target_bin"] = np.where(
-            self.data_frame["Target"] > 1,
-            1, 0)
+            self.data_frame["Target"] > 1, 1, 0
+        )
 
         self.data_frame["Target_bin"] = np.where(
-            self.data_frame['Target'].isna(),
-            np.nan, self.data_frame['Target_bin']
+            self.data_frame["Target"].isna(),
+            np.nan,
+            self.data_frame["Target_bin"],
         )
         return self.data_frame
 
