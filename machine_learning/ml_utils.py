@@ -267,14 +267,12 @@ def get_recommendation(
         (positions_df["Open_trades"] * 33.3).round(0).astype(int)
     ).astype(str) + "%"
 
-    open_pos = (
-        (positions_df["Open_Position"] > 0)
-        & (positions_df["Position"] != 0)
+    open_pos = (positions_df["Open_Position"] > 0) & (
+        positions_df["Position"] != 0
     )
 
-    close_pos = (
-        (positions_df["Close_Position"] < 0)
-        & (positions_df["Position"] != 0)
+    close_pos = (positions_df["Close_Position"] < 0) & (
+        positions_df["Position"] != 0
     )
 
     open_pos_df = positions_df[open_pos]["Open_Position"].cumsum()
