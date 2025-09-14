@@ -109,14 +109,14 @@ def calculate_model(
     feats: list,
     test_index: int,
     plot: bool = False,
-    output: Literal["All", "Return", "Model", "Dataset"] = "All",
+    output: Literal["All", "Return", "Model", "Config", "Dataset"] = "All",
     long_only: bool = False,
     short_only: bool = False,
     train_in_middle: bool = False,
     cutoff_point: float | None = None,
     dev: bool = False,
     **hyperparams,
-) -> pd.DataFrame:
+) -> pd.DataFrame | tuple | CatBoostClassifier:
     """
     Calculates the model based on the input dataset, features, test
     index,and hyperparameters.
@@ -265,6 +265,8 @@ def calculate_model(
                 all_x,
                 all_y,
             )
+        case "Config":
+            return best_model, all_x, all_y, index_splits
         case _:
             raise ValueError("Invalid output parameter")
 
