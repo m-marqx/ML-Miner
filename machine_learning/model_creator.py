@@ -559,7 +559,7 @@ class ModelCreator:
             "silent": True,
         }
 
-    def beta_generate_hyperparameters(self, hyperparams_ranges) -> dict:
+    def beta_generate_hyperparameters(self, hyperparams_ranges: dict | None) -> dict:
         """
         Generate a dictionary of hyperparameters for the model with
         custom ranges.
@@ -638,28 +638,31 @@ class ModelCreator:
         """
         eval_metrics = ["Logloss", "AUC", "F1", "Precision", "Recall", "PRAUC"]
 
+        if not hyperparams_ranges:
+            hyperparams_ranges = {}
+
         hyperparams_ranges["learning_rate"] = hyperparams_ranges.get(
-            "learning_rate", (0.01, 1.0)
+            "learning_rate", (0.01, 0.10)
         )
 
         hyperparams_ranges["depth"] = hyperparams_ranges.get(
-            "depth", (1, 12)
+            "depth", (3, 8)
         )
 
         hyperparams_ranges["min_child_samples"] = hyperparams_ranges.get(
-            "min_child_samples", (1, 20)
+            "min_child_samples", (5, 30)
         )
 
         hyperparams_ranges["colsample_bylevel"] = hyperparams_ranges.get(
-            "colsample_bylevel", (0.1, 1.0)
+            "colsample_bylevel", (0.5, 0.95)
         )
 
         hyperparams_ranges["subsample"] = hyperparams_ranges.get(
-            "subsample", (0.1, 1.0)
+            "subsample", (0.6, 0.95)
         )
 
         hyperparams_ranges["reg_lambda"] = hyperparams_ranges.get(
-            "reg_lambda", (1, 205)
+            "reg_lambda", (3, 100)
         )
 
         hyperparams_ranges["eval_metric"] = hyperparams_ranges.get(
@@ -670,10 +673,23 @@ class ModelCreator:
             "random_seed", (1, 100_000_000)
         )
 
+        hyperparams_ranges["random_strength"] = hyperparams_ranges.get(
+            "random_strength", (1, 10)
+        )
+
+        hyperparams_ranges["bagging_temperature"] = hyperparams_ranges.get(
+            "bagging_temperature", (0, 2)
+        )
+
+
         float_step = 0.01
         int_step = 1
 
-        hyperparameter_seed = np.random.randint(1, 100_000_000)
+        hyperparameter_seed = np.random.randint(
+            hyperparams_ranges["random_seed"][0],
+            hyperparams_ranges["random_seed"][1]
+        )
+
         self.hyperparameter_rng = np.random.default_rng(hyperparameter_seed)
 
         return {
@@ -734,6 +750,21 @@ class ModelCreator:
             ),
 
             "random_seed": hyperparameter_seed,
+            "random_strength": self.hyperparameter_rng.choice(
+                range(
+                    hyperparams_ranges["random_strength"][0],
+                    hyperparams_ranges["random_strength"][1] + int_step,
+                    int_step,
+                )
+            ),
+
+            "bagging_temperature": self.hyperparameter_rng.choice(
+                np.arange(
+                    hyperparams_ranges["bagging_temperature"][0],
+                    hyperparams_ranges["bagging_temperature"][1] + float_step,
+                    float_step,
+                )
+            ),
             "silent": True,
         }
 
