@@ -151,6 +151,21 @@ class MLStacker:
         }
 
     def run_model_onchain(self):
+        """
+        Generate and train a single on-chain model with random
+        parameters.
+
+        This method generates random hyperparameters and on-chain
+        feature parameters, then trains a model using these
+        configurations.
+
+        Returns
+        -------
+        dict
+            Dictionary containing the trained model, features, labels,
+            index splits, hyperparameters, and feature parameters as
+            returned by train_onchain_model().
+        """
         hyperparams = self.model_creator.beta_generate_hyperparameters({})
         params = self.model_creator.generate_onchain_features()
         return self.train_onchain_model(hyperparams, params)
