@@ -16,6 +16,7 @@ from flask_cors import CORS
 from machine_learning.model_builder import model_creation
 from machine_learning.ml_utils import DataHandler, get_recommendation
 from machine_learning.ml_pipeline import ModelPipeline
+from data_pipeline_api import DataPipelineAPI
 
 app = Flask(__name__)
 
