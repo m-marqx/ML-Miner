@@ -243,7 +243,11 @@ class MLStacker:
             **hyperparams
         )
 
-        feat_columns = [col for col in self.model_creator.features_dataset.columns if col.endswith('_feat')]
+        feat_columns = [
+            col
+            for col in self.model_creator.features_dataset.columns
+            if col.endswith("_feat")
+        ]
 
         return {
             "model": model_dict[0],
