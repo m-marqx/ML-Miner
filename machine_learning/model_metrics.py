@@ -6,7 +6,7 @@ import pandas as pd
 from machine_learning.ml_utils import DataHandler
 from machine_learning.ols_metrics import OLSMetrics
 from custom_exceptions.invalid_arguments import InvalidArgumentError
-from utils import Statistics
+from utils import Statistics, create_logger
 
 
 class ModelMetrics:
@@ -59,6 +59,8 @@ class ModelMetrics:
         self.results_val = results.loc[
             self.val_periods[0] : self.val_periods[1]
         ]
+
+        self.logger = create_logger("ModelMetrics")
 
     def set_results_test(self, results_test: pd.DataFrame):
         """
@@ -411,25 +413,6 @@ class ModelMetrics:
 
         total_operations_test_pct: float = total_operations[0] / max_trade_qty
         total_operations_val_pct: float = total_operations[1] / max_trade_qty
-
-        if total_operations_test_pct > 1 or total_operations_val_pct > 1:
-            warnings.warn(
-                "Total operations percentage is higher than 1"
-                + f" (Test: {total_operations_test_pct:.4%})"
-                + f" | (Val: {total_operations_val_pct:.4%})",
-                RuntimeWarning,
-            )
-
-        elif (
-            total_operations_test_pct >= 0.8
-            or total_operations_val_pct >= 0.8
-        ):
-            warnings.warn(
-                "Total operations percentage is higher than 0.8"
-                + f" (Test: {total_operations_test_pct:.4%})"
-                + f" | (Val: {total_operations_val_pct:.4%})",
-                RuntimeWarning,
-            )
 
         total_operations_pct: tuple[float, float] = (
             total_operations_test_pct,
