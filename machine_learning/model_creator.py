@@ -446,6 +446,65 @@ class ModelCreator:
             adjusted_target,
         )
 
+    def get_model(
+        self,
+        max_trades: int = 3,
+        off_days: int = 7,
+        side: int = 1,
+        cutoff_point: int = 5,
+        **hyperparams,
+    ) -> tuple:
+        """
+        Get a machine learning model based on the features dataset.
+        This method builds a model using the features dataset, applies
+        adjustments for maximum trades, and returns the model along with
+        the index splits and target series.
+
+        Parameters
+        ----------
+        max_trades : int, optional
+            Maximum number of allowed trades (default is 3).
+        off_days : int, optional
+            Number of off days between trades (default is 7).
+        side : int, optional
+            Trading side parameter for adjustments (default is 1).
+        cutoff_point : int, optional
+            Cutoff point used in the model building process (default is 5).
+        **hyperparams : dict
+            Additional hyperparameters to pass to the calculate_model function.
+
+        Returns
+        -------
+        tuple
+            A tuple containing:
+            - model : CatBoostClassifier
+                The trained Catboost model.
+            - all_x : pd.DataFrame
+                The features used for training the model.
+            - all_y : pd.Series
+                The target series used for training the model.
+            - index_splits: dict[str, pd.Interval]
+                The index positions used to split the dataset.
+        """
+        df_columns = self.features_dataset.columns.tolist()
+        features = [col for col in df_columns if col.endswith("_feat")]
+
+        data_frame = pd.concat([self.dataset, self.features_dataset], axis=1)
+        data_frame = data_frame.dropna(subset=["Target"])
+
+        return calculate_model(
+            dataset=data_frame,
+            feats=features,
+            test_index=self.test_index,
+            plot=False,
+            output="Config",
+            long_only=False,
+            train_in_middle=self.train_in_middle,
+            cutoff_point=cutoff_point,
+            dev=False,
+            **hyperparams,
+        )
+
     def calculate_combinations(self, options_list: list) -> np.array:
         """
         Calculate the combinations.
