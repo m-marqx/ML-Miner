@@ -24,18 +24,18 @@ class ModelPipeline:
 
     def create_model(self, configs_dataset, dataframe):
         """
-        Create a machine learning model based on the provided 
+        Create a machine learning model based on the provided
         configuration parameters.
 
         Parameters
         ----------
         configs_dataset : pandas.Series
-            Series containing configuration parameters including 
+            Series containing configuration parameters including
             hyperparameters,
-            feature parameters, test_index, train_in_middle, side, 
+            feature parameters, test_index, train_in_middle, side,
             max_trades, and off_days.
         dataframe : pandas.DataFrame
-            The input dataframe containing the features and target 
+            The input dataframe containing the features and target
             variables.
 
         Returns
