@@ -190,3 +190,21 @@ class WalletBalanceAnalyzer:
         ) + (token_balance_df["WBTC"] * token_balance_df["usdPrice"]).fillna(0)
         return token_balance_df
 
+    def _fetch_wallet_balances_from_db(self) -> pd.DataFrame:
+        """
+        Fetch existing wallet balances from database.
+
+        Returns
+        -------
+        pd.DataFrame
+            Existing wallet balance data sorted by block number.
+        """
+        wallet_balance_df = pd.read_sql(
+            "wallet_balances",
+            con=self.database_url,
+            index_col="height",
+        )
+        wallet_balance_df.index.name = "block_number"
+        wallet_balance_df = wallet_balance_df.reset_index()
+        wallet_balance_df = self._calculate_total_usd(wallet_balance_df)
+        return wallet_balance_df.sort_values(by="block_number").iloc[:-2]
