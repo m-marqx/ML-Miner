@@ -46,7 +46,7 @@ jobs:
           quicknode_endpoint_8: ${{ secrets.QUICKNODE_ENDPOINT_8 }}
           quicknode_endpoint_9: ${{ secrets.QUICKNODE_ENDPOINT_9 }}
           quicknode_endpoint_10: ${{ secrets.QUICKNODE_ENDPOINT_10 }}
-        run: python btc_singlecore_updater.py
+        run: python ./btc_singlecore_updater.py
 
       - name: Commit and push changes
         uses: stefanzweifel/git-auto-commit-action@v5
