@@ -8,6 +8,8 @@ from joblib import Parallel, delayed
 from crypto_explorer import QuickNodeAPI, CcxtAPI
 
 def main():
+    start = time.perf_counter()
+
     api_keys = []
 
     for x in range(1, 11):
@@ -45,7 +47,8 @@ def main():
     if max_height_diff > 1:
         raise ValueError("There are missing blocks in the data")
 
-    data["time"] = pd.to_datetime(data["time"], unit="s")
+
+    data["time"] = np.where(data["time"] < 1e10, data["time"] * 1000, data["time"])
     data = data.set_index("time")
 
     new_file_folder = "data/onchain/BTC/block_stats_fragments/incremental"
@@ -65,7 +68,7 @@ def main():
     print(highest_height)
 
     initial_size = len(batch_data) + last_height
-    batch_end = initial_size + 10000
+    batch_end = initial_size + 20000
     print(last_height < total_blocks)
     print(batch_end < total_blocks)
     print(last_height)
@@ -77,12 +80,12 @@ def main():
             break
 
         initial_size = len(batch_data) + last_height
-        batch_end = initial_size + 10000
+        batch_end = initial_size + 20000
 
         if batch_end > total_blocks:
             batch_end = total_blocks
 
-        batch_data += Parallel(n_jobs=8, verbose=10000)(
+        batch_data += Parallel(n_jobs=6, verbose=10000)(
             delayed(quant_node_api.get_block_stats)(x)
             for x in range(initial_size, batch_end)
         )
@@ -101,9 +104,7 @@ def main():
         print(f"\nTempo decorrido: {elapsed_time}")
         print(f"Tempo restante: {restant_time}")
 
-        btc_data = pd.read_parquet(file_path)
-
-        pd.concat([btc_data, onchain_data]).to_parquet(file_path)
+        onchain_data.to_parquet(f"{new_file_folder}/incremental_block_stats_2.parquet")
 
 
 main()
