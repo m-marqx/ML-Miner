@@ -1,0 +1,62 @@
+name: BTC Data Update
+
+on:
+  # Run every 30 minutes
+  schedule:
+    - cron: "*/30 * * * *"
+
+  # Allow manual triggering
+  workflow_dispatch:
+
+jobs:
+  update-data:
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+
+    permissions:
+      contents: write
+
+    steps:
+      - name: Checkout auto-data branch
+        uses: actions/checkout@v4
+        with:
+          ref: auto-data
+          fetch-depth: 0
+
+      - name: Set up Python 3.11
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: "pip"
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+
+      - name: Run BTC Single-Core Updater
+        env:
+          quicknode_endpoint_1: ${{ secrets.QUICKNODE_ENDPOINT_1 }}
+          quicknode_endpoint_2: ${{ secrets.QUICKNODE_ENDPOINT_2 }}
+          quicknode_endpoint_3: ${{ secrets.QUICKNODE_ENDPOINT_3 }}
+          quicknode_endpoint_4: ${{ secrets.QUICKNODE_ENDPOINT_4 }}
+          quicknode_endpoint_5: ${{ secrets.QUICKNODE_ENDPOINT_5 }}
+          quicknode_endpoint_6: ${{ secrets.QUICKNODE_ENDPOINT_6 }}
+          quicknode_endpoint_7: ${{ secrets.QUICKNODE_ENDPOINT_7 }}
+          quicknode_endpoint_8: ${{ secrets.QUICKNODE_ENDPOINT_8 }}
+          quicknode_endpoint_9: ${{ secrets.QUICKNODE_ENDPOINT_9 }}
+          quicknode_endpoint_10: ${{ secrets.QUICKNODE_ENDPOINT_10 }}
+        run: python btc_singlecore_updater.py
+
+      - name: Commit and push changes
+        uses: stefanzweifel/git-auto-commit-action@v5
+        with:
+          commit_message: "Auto-update BTC data - ${{ github.run_id }}"
+          branch: auto-data
+          file_pattern: |
+            data/cryptodata/dynamic_btc.parquet
+            data/onchain/BTC/block_stats_fragments/dump/*.parquet
+            data/onchain/BTC/block_stats_fragments/incremental/*.parquet
+          commit_user_name: "GitHub Actions Bot"
+          commit_user_email: "actions@github.com"
+          commit_author: "GitHub Actions Bot <actions@github.com>"

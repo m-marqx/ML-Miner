@@ -1,0 +1,39 @@
+name: Sync auto-data with main
+
+on:
+  # Run every Sunday at 00:00 UTC
+  schedule:
+    - cron: "0 0 * * 0"
+
+  # Allow manual triggering
+  workflow_dispatch:
+
+jobs:
+  sync-branches:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+
+    permissions:
+      contents: write
+
+    steps:
+      - name: Checkout auto-data branch
+        uses: actions/checkout@v4
+        with:
+          ref: auto-data
+          fetch-depth: 0
+
+      - name: Configure Git
+        run: |
+          git config user.name "GitHub Actions Bot"
+          git config user.email "actions@github.com"
+
+      - name: Fetch main branch
+        run: git fetch origin main
+
+      - name: Merge main into auto-data
+        run: |
+          git merge origin/main --no-edit -m "Sync auto-data with main - $(date +'%Y-%m-%d')"
+
+      - name: Push changes
+        run: git push origin auto-data
