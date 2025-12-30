@@ -162,8 +162,8 @@ def main():
     quant_node_api = QuickNodeAPI(api_keys, 0)
 
     # Update OHLCV data
-    print("\n--- Updating OHLCV Data ---")
-    update_ohlcv_data()
+    # print("\n--- Updating OHLCV Data ---")
+    # update_ohlcv_data()
 
     # Update on-chain data (limit to 5 blocks for 30-min cron)
     print("\n--- Updating On-Chain Data ---")
