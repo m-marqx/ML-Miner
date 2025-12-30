@@ -8,9 +8,14 @@ from joblib import Parallel, delayed
 from crypto_explorer import QuickNodeAPI, CcxtAPI
 
 def main():
-    start = time.perf_counter()
+    api_keys = []
 
-    api_keys = [os.getenv(f"quicknode_endpoint_{x}") for x in range(1, 11)]
+    for x in range(1, 11):
+        api_key = os.getenv(f"quicknode_endpoint_{x}")
+
+        if api_key:
+            api_keys.append(api_key)
+
     quant_node_api = QuickNodeAPI(api_keys, 0)
     last_height = 0
     batch_data = []
