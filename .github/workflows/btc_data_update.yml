@@ -1,29 +1,36 @@
-name: BTC Data Update
+name: BTC Data Updater
 
 on:
-  # Run every 30 minutes
+  # Executa automaticamente a cada 30 minutos
   schedule:
     - cron: "*/30 * * * *"
 
-  # Allow manual triggering
+  # Permite execução manual via GitHub UI
   workflow_dispatch:
 
 jobs:
-  update-data:
+  update-btc-data:
     runs-on: ubuntu-latest
     timeout-minutes: 25
-
     permissions:
       contents: write
+      packages: write
 
     steps:
-      - name: Checkout auto-data branch
+      - name: Checkout repository
         uses: actions/checkout@v4
         with:
-          ref: auto-data
+          ref: data-updates
           fetch-depth: 0
+          token: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Set up Python 3.11
+      - name: Create branch if not exists
+        run: |
+          git fetch origin main
+          git checkout data-updates 2>/dev/null || git checkout -b data-updates origin/main
+          git reset --hard origin/main
+
+      - name: Set up Python
         uses: actions/setup-python@v5
         with:
           python-version: "3.11"
@@ -34,7 +41,7 @@ jobs:
           python -m pip install --upgrade pip
           pip install -r requirements.txt
 
-      - name: Run BTC Single-Core Updater
+      - name: Run BTC Data Updater
         env:
           quicknode_endpoint_1: ${{ secrets.QUICKNODE_ENDPOINT_1 }}
           quicknode_endpoint_2: ${{ secrets.QUICKNODE_ENDPOINT_2 }}
@@ -48,15 +55,48 @@ jobs:
           quicknode_endpoint_10: ${{ secrets.QUICKNODE_ENDPOINT_10 }}
         run: python ./btc_singlecore_updater.py
 
-      - name: Commit and push changes
-        uses: stefanzweifel/git-auto-commit-action@v5
+      - name: Configure Git
+        run: |
+          git config --local user.email "github-actions[bot]@users.noreply.github.com"
+          git config --local user.name "github-actions[bot]"
+
+      - name: Check for changes
+        id: git-check
+        run: |
+          git add data/
+          if git diff --staged --quiet; then
+            echo "changes=false" >> $GITHUB_OUTPUT
+          else
+            echo "changes=true" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Commit and Push changes
+        if: steps.git-check.outputs.changes == 'true'
+        run: |
+          git commit -m "🔄 Auto-update BTC data - $(date +'%Y-%m-%d %H:%M:%S UTC')"
+          git push origin data-updates --force
+
+      - name: Set up Docker Buildx
+        if: steps.git-check.outputs.changes == 'true'
+        uses: docker/setup-buildx-action@v3
+
+      - name: Login to GitHub Container Registry
+        if: steps.git-check.outputs.changes == 'true'
+        uses: docker/login-action@v3
         with:
-          commit_message: "Auto-update BTC data - ${{ github.run_id }}"
-          branch: auto-data
-          file_pattern: |
-            data/cryptodata/dynamic_btc.parquet
-            data/onchain/BTC/block_stats_fragments/dump/*.parquet
-            data/onchain/BTC/block_stats_fragments/incremental/*.parquet
-          commit_user_name: "GitHub Actions Bot"
-          commit_user_email: "actions@github.com"
-          commit_author: "GitHub Actions Bot <actions@github.com>"
+          registry: ghcr.io
+          username: ${{ github.repository_owner }}
+          password: ${{ secrets.GIT_PASSWORD }}
+
+      - name: Build and push data image
+        if: steps.git-check.outputs.changes == 'true'
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          file: ./Dockerfile.data
+          push: true
+          tags: |
+            ghcr.io/${{ github.repository_owner }}/ml-miner-data:latest
+            ghcr.io/${{ github.repository_owner }}/ml-miner-data:${{ github.run_number }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
