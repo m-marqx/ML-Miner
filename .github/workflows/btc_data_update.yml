@@ -20,14 +20,14 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
         with:
-          ref: data-updates
+          ref: auto-data
           fetch-depth: 0
           token: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Create branch if not exists
         run: |
           git fetch origin main
-          git checkout data-updates 2>/dev/null || git checkout -b data-updates origin/main
+          git checkout auto-data 2>/dev/null || git checkout -b auto-data origin/main
           git reset --hard origin/main
 
       - name: Set up Python
@@ -74,7 +74,7 @@ jobs:
         if: steps.git-check.outputs.changes == 'true'
         run: |
           git commit -m "🔄 Auto-update BTC data - $(date +'%Y-%m-%d %H:%M:%S UTC')"
-          git push origin data-updates --force
+          git push origin auto-data --force
 
       - name: Set up Docker Buildx
         if: steps.git-check.outputs.changes == 'true'
