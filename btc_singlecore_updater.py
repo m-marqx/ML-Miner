@@ -89,7 +89,7 @@ def update_onchain_data(quant_node_api: QuickNodeAPI, max_blocks: int = 5) -> No
 
     # Calculate batch range
     total_blocks = highest_height
-    blocks_to_fetch = min(max_blocks, total_blocks - last_height)
+    blocks_to_fetch = total_blocks - last_height
 
     if blocks_to_fetch <= 0:
         print("No new blocks to fetch. Data is up to date.")
